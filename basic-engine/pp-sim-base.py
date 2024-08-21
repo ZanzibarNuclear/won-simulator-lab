@@ -1,54 +1,70 @@
-import time
+import simpy
+import random
 
-class SimulationComponent:
-    def update(self, delta_time):
-        pass
+def flip_coin():
+    return random.choice(['Heads', 'Tails'])
 
-class FuelConsumption(SimulationComponent):
-    def update(self, delta_time):
-        print(f"Updating fuel consumption. Delta time: {delta_time}")
-        # Add your fuel consumption logic here
+class FuelConsumption:
+    def __init__(self, env):
+        self.env = env
+        self.action = env.process(self.run())
+        self.rateOfConsumption = 2
+        self.consumed = 0
 
-class GeneratorSpeed(SimulationComponent):
-    def update(self, delta_time):
-        print(f"Updating generator speed. Delta time: {delta_time}")
-        # Add your generator speed logic here
+    def run(self):
+        while True:
+            changeRate = flip_coin()
+            if (changeRate == 'Heads'):
+                self.rateOfConsumption += 1
+            self.consumed += self.rateOfConsumption
+            print(f"Updating fuel consumption at {self.consumed} ({self.rateOfConsumption} units per tick)")
+            # Add your fuel consumption logic here
+            yield self.env.timeout(1)  # Wait for 1 time unit
 
-class ElectricityDemand(SimulationComponent):
-    def update(self, delta_time):
-        print(f"Updating electricity demand. Delta time: {delta_time}")
-        # Add your electricity demand logic here
+class GeneratorSpeed:
+    def __init__(self, env):
+        self.env = env
+        self.action = env.process(self.run())
+        self.speed = 0
 
-class Simulation:
-    def __init__(self, time_step):
-        self.time_step = time_step
-        self.components = []
-        self.current_time = 0
+    def run(self):
+        while True:
+            if self.speed < 5:
+                # ramp up to "full speed"
+                self.speed += 1
+            print(f"Updating generator speed at {self.speed}")
+            # Add your generator speed logic here
+            yield self.env.timeout(1)  # Wait for 1 time unit
 
-    def add_component(self, component):
-        self.components.append(component)
+class ElectricityDemand:
+    def __init__(self, env):
+        self.env = env
+        self.action = env.process(self.run())
+        self.demand = 100
 
-    def run(self, duration):
-        end_time = self.current_time + duration
-        while self.current_time < end_time:
-            self.step()
-            time.sleep(self.time_step)  # This line simulates the passage of real time
+    def run(self):
+        while True:
+            # assumes random small fluxuation
+            increase = random.randint(-5, 5)
+            self.demand += increase
+            if self.demand < 0:
+                self.demand = 0
+            print(f"Updating electricity demand changed by {increase} and is at {self.demand}")
+            # Add your electricity demand logic here
+            yield self.env.timeout(1)  # Wait for 1 time unit
 
-    def step(self):
-        print(f"\nTime step: {self.current_time}")
-        for component in self.components:
-            component.update(self.time_step)
-        self.current_time += self.time_step
+def setup(env):
+    fuel_consumption = FuelConsumption(env)
+    generator_speed = GeneratorSpeed(env)
+    electricity_demand = ElectricityDemand(env)
 
-# Usage
-if __name__ == "__main__":
-    # Create the simulation with a time step of 1 second
-    sim = Simulation(time_step=1)
+# Create SimPy environment
+env = simpy.Environment()
 
-    # Add components
-    sim.add_component(FuelConsumption())
-    sim.add_component(GeneratorSpeed())
-    sim.add_component(ElectricityDemand())
+# Setup and start the simulation
+setup(env)
 
-    # Run the simulation for 10 seconds
-    sim.run(duration=10)
+# Run the simulation
+print("Starting simulation...")
+env.run(until=10)  # Run for 10 time units
+print("Simulation complete.")
