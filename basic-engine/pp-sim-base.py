@@ -5,33 +5,33 @@ def flip_coin():
     return random.choice(['Heads', 'Tails'])
 
 class FuelConsumption:
-    def __init__(self, env):
+    def __init__(self, env, generator_speed):
         self.env = env
         self.action = env.process(self.run())
-        self.rateOfConsumption = 2
+        self.generator_speed = generator_speed
+        self.rateOfConsumption = 1
         self.consumed = 0
 
     def run(self):
         while True:
-            changeRate = flip_coin()
-            if (changeRate == 'Heads'):
-                self.rateOfConsumption += 1
+            self.rateOfConsumption += 1
             self.consumed += self.rateOfConsumption
             print(f"Updating fuel consumption at {self.consumed} ({self.rateOfConsumption} units per tick)")
             # Add your fuel consumption logic here
             yield self.env.timeout(1)  # Wait for 1 time unit
 
 class GeneratorSpeed:
-    def __init__(self, env):
+    def __init__(self, env, fuel_consumption):
         self.env = env
+        self.fuel_consumption = fuel_consumption
         self.action = env.process(self.run())
         self.speed = 0
+        self.max = 3600
 
     def run(self):
         while True:
-            if self.speed < 5:
-                # ramp up to "full speed"
-                self.speed += 1
+            # max of 3,600 RPM for 2 pole generator OR 1,800 RPM for 4 pole generator
+            self.speed = min(self.max, self.fuel_consumption.rateOfConsumption * 500)
             print(f"Updating generator speed at {self.speed}")
             # Add your generator speed logic here
             yield self.env.timeout(1)  # Wait for 1 time unit
@@ -54,8 +54,8 @@ class ElectricityDemand:
             yield self.env.timeout(1)  # Wait for 1 time unit
 
 def setup(env):
-    fuel_consumption = FuelConsumption(env)
-    generator_speed = GeneratorSpeed(env)
+    fuel_consumption = FuelConsumption(env, generator_speed)
+    generator_speed = GeneratorSpeed(env, fuel_consumption)
     electricity_demand = ElectricityDemand(env)
 
 # Create SimPy environment
