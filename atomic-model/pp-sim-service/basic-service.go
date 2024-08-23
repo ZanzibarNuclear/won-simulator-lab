@@ -26,9 +26,42 @@ func main() {
     router.HandleFunc("/items/{id}", updateItem).Methods("PUT")
     router.HandleFunc("/items/{id}", deleteItem).Methods("DELETE")
 
+    // Instantiate a simulator, operate it, and see the results
+    router.HandleFunc("/sims", createSim).Methods("POST")  // create an instance using given configuration (or defaults)
+    router.HandleFunc("/sims/{id}", getSimStatus).Methods("GET")  // return configuration and operational status
+    router.HandleFunc("/sims/{id}", updateSimConfig).Methods("PUT")  // modify configuration
+    router.HandleFunc("/sims/{id}/runs", progressSim).Methods("POST")  // run given (or default) iterations
+    router.HandleFunc("/sims/{id}/runs", getSimData).Methods("GET")  // return run stats ?? by run ID? given search parameters?
+
     // Start server
     log.Println("Server is starting on port 8080...")
     log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+func createSim(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    log.Println("Get status of " + vars["id"])
+    w.WriteHeader(http.StatusNotImplemented)
+}
+func getSimStatus(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    log.Println("Get status of " + vars["id"])
+    w.WriteHeader(http.StatusNotImplemented)
+}
+func updateSimConfig(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    log.Println("Update configuration of " + vars["id"])
+    w.WriteHeader(http.StatusNotImplemented)
+}
+func progressSim(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    log.Println("Run " + vars["id"])
+    w.WriteHeader(http.StatusNotImplemented)
+}
+func getSimData(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    log.Println("Get run data of " + vars["id"])
+    w.WriteHeader(http.StatusNotImplemented)
 }
 
 func getItems(w http.ResponseWriter, r *http.Request) {
