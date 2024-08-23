@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "pp-sim",
+    # Add more member projects here
+]
+
+[workspace.package]
+version = "0.1.0"
+resolver = "2"
+edition = "2021"
+
+# You can specify shared dependencies here
+[workspace.dependencies]
+serde = "1.0"

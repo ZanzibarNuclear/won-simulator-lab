@@ -1,0 +1,11 @@
+[package]
+name = "pp-sim"
+version.workspace = true
+resolver.workspace = true
+edition.workspace = true
+
+[dependencies]
+
+[[bin]]
+name = "pp-sim"
+path = "pp-sim.rs"
