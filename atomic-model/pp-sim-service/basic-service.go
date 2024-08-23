@@ -54,7 +54,7 @@ func createItem(w http.ResponseWriter, r *http.Request) {
 
 func deleteItem(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
-    slices.DeleteFunc(items, func(item Item) bool {
+    items = slices.DeleteFunc(items, func(item Item) bool {
         return item.ID == params["id"]
     })
 }
