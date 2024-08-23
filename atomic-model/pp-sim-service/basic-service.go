@@ -23,6 +23,7 @@ func main() {
     router.HandleFunc("/items", getItems).Methods("GET")
     router.HandleFunc("/items", createItem).Methods("POST")
     router.HandleFunc("/items/{id}", getItem).Methods("GET")
+    router.HandleFunc("/items/{id}", updateItem).Methods("PUT")
     router.HandleFunc("/items/{id}", deleteItem).Methods("DELETE")
 
     // Start server
@@ -50,6 +51,21 @@ func createItem(w http.ResponseWriter, r *http.Request) {
     _ = json.NewDecoder(r.Body).Decode(&item)
     items = append(items, item)
     json.NewEncoder(w).Encode(item)
+}
+
+func updateItem(w http.ResponseWriter, r *http.Request) {
+    params := mux.Vars(r)
+    for index, item := range items {
+        if item.ID == params["id"] {
+            var updatedItem Item
+            _ = json.NewDecoder(r.Body).Decode(&updatedItem)
+            updatedItem.ID = params["id"]
+            items[index] = updatedItem
+            json.NewEncoder(w).Encode(updatedItem)
+            return
+        }
+    }
+    json.NewEncoder(w).Encode(&Item{})
 }
 
 func deleteItem(w http.ResponseWriter, r *http.Request) {
