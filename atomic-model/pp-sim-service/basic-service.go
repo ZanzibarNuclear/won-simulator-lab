@@ -5,7 +5,9 @@ import (
 	"log"
 	"net/http"
 	"slices"
+	"sync"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -14,7 +16,17 @@ type Item struct {
     Name string `json:"name"`
 }
 
+type Sim struct {
+    ID string `json:"id"`
+    Name string `json:"name"`
+    Slogan string `json:"slogan"`
+}
+
 var items []Item
+var (
+    sims = make(map[string]Sim)
+    mutex = &sync.RWMutex{}
+)
 
 func main() {
     router := mux.NewRouter()
@@ -39,15 +51,40 @@ func main() {
 }
 
 func createSim(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
-    log.Println("Get status of " + vars["id"])
-    w.WriteHeader(http.StatusNotImplemented)
+    mutex.RLock()
+    defer mutex.RUnlock()
+
+    var simBud Sim
+    err := json.NewDecoder(r.Body).Decode(&simBud)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request payload"})
+        return
+    }
+
+    simBud.ID = uuid.New().String()  // could check for duplicates, especially if shorter unique key is used
+
+    // if _, exists := sims[simBud.ID]; exists {
+    //     w.WriteHeader(http.StatusConflict)
+    //     json.NewEncoder(w).Encode(map[string]string{"error": "Item with this ID already exists"})
+    //     return
+    // }
+
+    sims[simBud.ID] = simBud
+    w.WriteHeader(http.StatusCreated)
+    json.NewEncoder(w).Encode(simBud)
 }
+
 func getSimStatus(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
-    log.Println("Get status of " + vars["id"])
-    w.WriteHeader(http.StatusNotImplemented)
+    params := mux.Vars(r)
+    if sim, found := sims[params["id"]]; found {
+        json.NewEncoder(w).Encode(sim)
+    } else {
+        w.WriteHeader(http.StatusNotFound)
+        json.NewEncoder(w).Encode(map[string]string{"error": "Item not found"})
+    }
 }
+
 func updateSimConfig(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     log.Println("Update configuration of " + vars["id"])
