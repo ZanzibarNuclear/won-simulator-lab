@@ -29,6 +29,7 @@ func (s *Simulation) Run() {
 		for _, part := range s.parts {
 			part.Update(&s.environment, s.parts)
 		}
+		fmt.Println()
 		// Update environment if needed
 	}
 }
