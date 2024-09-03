@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"won/sim-lab/go-engine/common"
-	"won/sim-lab/go-engine/parts"
+	"won/sim-lab/go-engine/part"
 )
 
 type Simulation struct {
