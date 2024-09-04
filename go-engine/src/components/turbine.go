@@ -13,7 +13,7 @@ type Turbine struct {
 
 func NewTurbine() *Turbine {
 	return &Turbine{
-		maxRpm: 3600,
+		maxRpm: common.TURBINE_MAX_RPM,
 		rpm:    0,
 	}
 }
@@ -30,8 +30,8 @@ func (t *Turbine) Update(env *common.Environment, otherComponents []Component) {
 	info := fmt.Sprintf("Turbine spinning at %d RPMs.", t.rpm)
 	fmt.Println(info)
 
-	if t.IsMaxedOut() {
-		fmt.Println("\tTo the max!!")
+	if t.MaxedOut() {
+		fmt.Println("\tRunning at max!!")
 	}
 }
 
@@ -44,6 +44,10 @@ func FindTurbine(components []Component) *Turbine {
 	return nil
 }
 
-func (t *Turbine) IsMaxedOut() bool {
+func (t *Turbine) MaxedOut() bool {
 	return t.rpm >= t.maxRpm
+}
+
+func (t *Turbine) Rpm() int {
+	return t.rpm
 }
