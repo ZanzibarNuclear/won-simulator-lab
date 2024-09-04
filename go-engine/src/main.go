@@ -3,23 +3,23 @@ package main
 import (
 	"fmt"
 	"won/sim-lab/go-engine/common"
-	"won/sim-lab/go-engine/part"
+	"won/sim-lab/go-engine/components"
 )
 
 type Simulation struct {
-	parts       []parts.Part
+	parts       []components.Component
 	environment common.Environment
 	iterations  int
 }
 
 func NewSimulation(iterations int) *Simulation {
 	return &Simulation{
-		parts:      make([]parts.Part, 0),
+		parts:      make([]components.Component, 0),
 		iterations: iterations,
 	}
 }
 
-func (s *Simulation) AddPart(p parts.Part) {
+func (s *Simulation) AddPart(p components.Component) {
 	s.parts = append(s.parts, p)
 }
 
@@ -35,12 +35,16 @@ func (s *Simulation) Run() {
 }
 
 func main() {
-	sim := NewSimulation(10) // 100 iterations
+	hour := 60
+	day := hour * 24
+	week := day * 7
+	year := week * 52
+	sim := NewSimulation(year) // minutes per day
 
 	// Add parts to the simulation
 	// sim.AddPart(parts.NewSomePart(...))
-	boiler := parts.NewBoiler()
-	steamTurbine := parts.NewTurbine()
+	boiler := components.NewBoiler()
+	steamTurbine := components.NewTurbine()
 
 	sim.AddPart(boiler)
 	sim.AddPart(steamTurbine)
