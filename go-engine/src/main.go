@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"won/sim-lab/go-engine/common"
 	"won/sim-lab/go-engine/components"
+	"won/sim-lab/go-engine/server"
 	"won/sim-lab/go-engine/sim"
 )
 
@@ -19,4 +21,7 @@ func main() {
 	sim.AddPart(steamTurbine)
 
 	sim.Run()
+
+	svr := server.NewServer(sim)
+	log.Fatal(svr.Start())
 }
