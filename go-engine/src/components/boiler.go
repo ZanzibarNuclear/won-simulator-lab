@@ -44,12 +44,19 @@ func (p *Boiler) Update(env *common.Environment, otherComponents []Component) {
 	if !turbine.MaxedOut() {
 		p.fuelConsumption.rate += p.fuelConsumption.rateOfIncrease
 	}
-
 	p.fuelConsumption.consumed += p.fuelConsumption.rate
+}
 
-	info := fmt.Sprintf("Boiler fuel consumed\n\tthis iteration:  %d\n\trunning total: %d", p.fuelConsumption.rate, p.fuelConsumption.consumed)
-
-	fmt.Println(info)
+func (p *Boiler) PrintStatus() {
+	fmt.Println("Boiler status:")
+	fmt.Printf("\tRunning: %t\n", p.running)
+	// fmt.Printf("\tTemperature: %d\n", p.temperature)
+	// fmt.Printf("\tHeat power: %d\n", p.heatPower)
+	fmt.Println("\tFuel consumption:")
+	fmt.Printf("\tCurrent rate (per iteration): %d\n", p.fuelConsumption.rate)
+	fmt.Printf("\tRate of increase: %d\n", p.fuelConsumption.rateOfIncrease)
+	fmt.Printf("\tCumulative: %d\n", p.fuelConsumption.consumed)
+	fmt.Println()
 }
 
 func FindBoiler(components []Component) *Boiler {

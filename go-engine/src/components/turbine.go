@@ -26,13 +26,15 @@ func (t *Turbine) Update(env *common.Environment, otherComponents []Component) {
 	}
 	// how fast based on fuel consumption
 	t.rpm = int(math.Min(float64(t.maxRpm), float64(boiler.fuelConsumption.rate*500)))
+}
 
-	info := fmt.Sprintf("Turbine spinning at %d RPMs.", t.rpm)
-	fmt.Println(info)
-
+func (t *Turbine) PrintStatus() {
+	fmt.Println("Turbine status:")
+	fmt.Printf("\tSpinning at %d RPMs\n", t.rpm)
 	if t.MaxedOut() {
-		fmt.Println("\tRunning at max!!")
+		fmt.Printf("\tMaxed out!!\n")
 	}
+	fmt.Println()
 }
 
 func FindTurbine(components []Component) *Turbine {

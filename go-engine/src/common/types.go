@@ -4,6 +4,16 @@ type Environment struct {
 	Weather string
 }
 
+func NewEnvironment() *Environment {
+	return &Environment{
+		Weather: "sunny",
+	}
+}
+
+func (e *Environment) String() string {
+	return e.Weather
+}
+
 const ROOM_TEMPERATURE = 20
 const TURBINE_MAX_RPM = 3600
 
