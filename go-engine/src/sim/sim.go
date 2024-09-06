@@ -50,7 +50,7 @@ func (s *Simulation) run(ticks int) {
 
 	for i := 0; i < ticks; i++ {
 		s.clock.Tick()
-		fmt.Printf("Iteration %d\n", s.clock.currentIter)
+		fmt.Printf("Starting iteration %d\n", s.clock.currentIter)
 
 		s.updateEnvironment()
 
@@ -70,25 +70,28 @@ func (s *Simulation) updateEnvironment() {
 
 func (s *Simulation) Status() map[string]interface{} {
 	status := map[string]interface{}{
-		"running":     s.running,
-		"currentTime": s.clock.SimTime(),
-		"weather":     s.environment.Weather,
-		"components":  make([]map[string]interface{}, 0),
+		"running":    s.running,
+		"simTime":    s.clock.SimTime(),
+		"weather":    s.environment.Weather,
+		"components": make([]map[string]interface{}, 0),
 	}
-
 	for _, component := range s.components {
 		componentStatus := component.Status()
 		status["components"] = append(status["components"].([]map[string]interface{}), componentStatus)
 	}
-
 	return status
 }
 
 func (s *Simulation) PrintStatus() {
-	fmt.Println(s.Status())
-	// for _, component := range s.components {
-	// 	component.PrintStatus()
-	// }
+	fmt.Printf("Sim Time: %s\n", s.clock.SimTime())
+	fmt.Printf("Started at: %s\n", s.clock.startedAt)
+	fmt.Printf("Is running: %t\n", s.running)
+	fmt.Printf("Last iteration %d\n", s.clock.currentIter)
+	fmt.Printf("Weather: %s\n\n", s.environment.Weather)
+	for _, component := range s.components {
+		component.PrintStatus()
+	}
+	fmt.Println("----------------------------------------")
 }
 
 func (s *Simulation) IsRunning() bool {
