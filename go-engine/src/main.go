@@ -1,23 +1,23 @@
 package main
 
 import (
+	"log"
 	"won/sim-lab/go-engine/components"
 	"won/sim-lab/go-engine/server"
 	"won/sim-lab/go-engine/sim"
-	"log"
 )
 
 func main() {
 	sim := sim.NewSimulation() // one day of one-minute iterations
 
 	// Add parts to the simulation
-	boiler := components.NewBoiler()
+	boiler := components.NewBoiler("Billy Boyle")
 	boiler.TurnOn()
 
-	steamTurbine := components.NewTurbine()
+	steamTurbine := components.NewTurbine("Tilly Turner")
 
-	sim.AddPart(boiler)
-	sim.AddPart(steamTurbine)
+	sim.AddComponent(boiler)
+	sim.AddComponent(steamTurbine)
 
 	// sim.Advance(common.WEEK_OF_MINUTES)
 

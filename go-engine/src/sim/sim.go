@@ -40,7 +40,7 @@ func NewSimulation() *Simulation {
 	}
 }
 
-func (s *Simulation) AddPart(p components.Component) {
+func (s *Simulation) AddComponent(p components.Component) {
 	s.components = append(s.components, p)
 }
 

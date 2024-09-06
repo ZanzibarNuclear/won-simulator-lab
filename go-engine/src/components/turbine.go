@@ -7,14 +7,16 @@ import (
 )
 
 type Turbine struct {
+	BaseComponent
 	maxRpm int
 	rpm    int
 }
 
-func NewTurbine() *Turbine {
+func NewTurbine(name string) *Turbine {
 	return &Turbine{
-		maxRpm: common.TURBINE_MAX_RPM,
-		rpm:    0,
+		BaseComponent: BaseComponent{Name: name},
+		maxRpm:        common.TURBINE_MAX_RPM,
+		rpm:           0,
 	}
 }
 
@@ -25,31 +27,23 @@ func (t *Turbine) Update(env *common.Environment, otherComponents []Component) {
 		return
 	}
 	// how fast based on fuel consumption
-	t.rpm = int(math.Min(float64(t.maxRpm), float64(boiler.fuelConsumption.rate*500)))
+	t.rpm = int(math.Min(float64(t.maxRpm), float64(boiler.fuel.rate*500)))
 }
 
 func (t *Turbine) Status() map[string]interface{} {
 	return map[string]interface{}{
+		"name": t.Name,
 		"rpm": t.rpm,
 	}
 }
 
 func (t *Turbine) PrintStatus() {
-	fmt.Println("Turbine status:")
+	fmt.Printf("Turbine: %s\n", t.Name)
 	fmt.Printf("\tSpinning at %d RPMs\n", t.rpm)
 	if t.MaxedOut() {
 		fmt.Printf("\tMaxed out!!\n")
 	}
 	fmt.Println()
-}
-
-func FindTurbine(components []Component) *Turbine {
-	for _, component := range components {
-		if turbine, ok := component.(*Turbine); ok {
-			return turbine
-		}
-	}
-	return nil
 }
 
 func (t *Turbine) MaxedOut() bool {

@@ -16,5 +16,33 @@ type Component interface {
 	Update(env *common.Environment, otherComponents []Component)
 	PrintStatus()
 	Status() map[string]interface{}
+	GetName() string
 }
+
+type BaseComponent struct {
+	Name string
+}
+
+func (b *BaseComponent) GetName() string {
+	return b.Name
+}
+
+func FindBoiler(components []Component) *Boiler {
+	for _, component := range components {
+		if boiler, ok := component.(*Boiler); ok {
+			return boiler
+		}
+	}
+	return nil
+}
+
+func FindTurbine(components []Component) *Turbine {
+	for _, component := range components {
+		if turbine, ok := component.(*Turbine); ok {
+			return turbine
+		}
+	}
+	return nil
+}
+
 
