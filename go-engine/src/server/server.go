@@ -23,11 +23,7 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
-	status := struct {
-		Running bool `json:"running"`
-	}{
-		Running: s.simulation.IsRunning(),
-	}
+	status := s.simulation.Status()
 
 	json.NewEncoder(w).Encode(status)
 }

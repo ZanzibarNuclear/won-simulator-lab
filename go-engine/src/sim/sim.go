@@ -34,6 +34,9 @@ func NewSimulation() *Simulation {
 			startedAt:   time.Date(2000, 1, 1, 8, 0, 0, 0, time.FixedZone("EST", -5*60*60)),
 			currentIter: 0,
 		},
+		environment: common.Environment{
+			Weather: "Sunny", // Initialize with a default weather
+		},
 	}
 }
 
@@ -49,6 +52,8 @@ func (s *Simulation) run(ticks int) {
 		s.clock.Tick()
 		fmt.Printf("Iteration %d\n", s.clock.currentIter)
 
+		s.updateEnvironment()
+
 		for _, component := range s.components {
 			component.Update(&s.environment, s.components)
 		}
@@ -56,19 +61,34 @@ func (s *Simulation) run(ticks int) {
 	}
 }
 
-func (s *Simulation) GetStatus() string {
-	status := fmt.Sprintf("\n=====\nSimulation Status at %s\n", s.clock.SimTime().Format("2006-01-02 15:04"))
-	status += fmt.Sprintf("\tRunning: %t\n", s.running)
-	status += "\tEnvironment:\n"
-	status += fmt.Sprintf("\t\tWeather: %s\n", s.environment.Weather)
+// Add this new method to update the environment
+func (s *Simulation) updateEnvironment() {
+	// This is a simple example. You might want to implement more complex weather patterns
+	weathers := []string{"Sunny", "Cloudy", "Rainy", "Windy"}
+	s.environment.Weather = weathers[s.clock.currentIter%len(weathers)]
+}
+
+func (s *Simulation) Status() map[string]interface{} {
+	status := map[string]interface{}{
+		"running":     s.running,
+		"currentTime": s.clock.SimTime(),
+		"weather":     s.environment.Weather,
+		"components":  make([]map[string]interface{}, 0),
+	}
+
+	for _, component := range s.components {
+		componentStatus := component.Status()
+		status["components"] = append(status["components"].([]map[string]interface{}), componentStatus)
+	}
+
 	return status
 }
 
 func (s *Simulation) PrintStatus() {
-	fmt.Println(s.GetStatus())
-	for _, component := range s.components {
-		component.PrintStatus()
-	}
+	fmt.Println(s.Status())
+	// for _, component := range s.components {
+	// 	component.PrintStatus()
+	// }
 }
 
 func (s *Simulation) IsRunning() bool {

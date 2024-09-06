@@ -15,5 +15,6 @@ import (
 type Component interface {
 	Update(env *common.Environment, otherComponents []Component)
 	PrintStatus()
+	Status() map[string]interface{}
 }
 

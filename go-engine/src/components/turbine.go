@@ -28,6 +28,12 @@ func (t *Turbine) Update(env *common.Environment, otherComponents []Component) {
 	t.rpm = int(math.Min(float64(t.maxRpm), float64(boiler.fuelConsumption.rate*500)))
 }
 
+func (t *Turbine) Status() map[string]interface{} {
+	return map[string]interface{}{
+		"rpm": t.rpm,
+	}
+}
+
 func (t *Turbine) PrintStatus() {
 	fmt.Println("Turbine status:")
 	fmt.Printf("\tSpinning at %d RPMs\n", t.rpm)
