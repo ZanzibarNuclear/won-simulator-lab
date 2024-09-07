@@ -1,15 +1,16 @@
 package main
 
 import (
-	"time"
-	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type simInfo struct {
-	ID string `json:"id"`
-	Name string `json:"name"`
-	Motto string `json:"motto"`
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Motto     string    `json:"motto"`
 	SpawnedAt time.Time `json:"spawned_at"`
 }
 
@@ -33,19 +34,17 @@ func getSimInfos(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, simInfos)
 }
 
-// postSimInfo adds an simulator from JSON received in the request body.
 func postSimInfo(c *gin.Context) {
-    var newSimInfo simInfo
+	var newSimInfo simInfo
 
-    // Call BindJSON to bind the received JSON to
-    // newAlbum.
-    if err := c.BindJSON(&newSimInfo); err != nil {
-        return
-    }
+	if err := c.BindJSON(&newSimInfo); err != nil {
+		return
+	}
 
-    // Add the new album to the slice.
-    simInfos = append(simInfos, newSimInfo)
-    c.IndentedJSON(http.StatusCreated, newSimInfo)
+	newSimInfo.SpawnedAt = time.Now()
+
+	simInfos = append(simInfos, newSimInfo)
+	c.IndentedJSON(http.StatusCreated, newSimInfo)
 }
 
 func getSimInfoByID(c *gin.Context) {
@@ -57,7 +56,7 @@ func getSimInfoByID(c *gin.Context) {
 		}
 	}
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "sim not found"})
-	}
+}
 
 func updateSimInfo(c *gin.Context) {
 	id := c.Param("id")
