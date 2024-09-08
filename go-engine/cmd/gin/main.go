@@ -22,6 +22,14 @@ var simInfos = []simInfo{
 
 func main() {
 	router := gin.Default()
+	router.LoadHTMLGlob("templates/*.tmpl")
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"title": "World of Nuclear Simulations",
+			"msg":   "Want to run a nuclear power plant? That might be a tad dangerous. So how about a simulation?",
+		})
+	})
 	router.GET("/sims", getSimInfos)
 	router.POST("/sims", postSimInfo)
 	router.GET("/sims/:id", getSimInfoByID)
