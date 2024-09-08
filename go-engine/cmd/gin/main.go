@@ -22,28 +22,23 @@ var simInfos = []simInfo{
 
 func main() {
 	router := gin.Default()
-	router.LoadHTMLGlob("templates/*.tmpl")
+	router.LoadHTMLGlob("templates/**/*")
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"title": "World of Nuclear Simulations",
-			"msg":   "Want to run a nuclear power plant? That might be a tad dangerous. So how about a simulation?",
+			"title": "My Simulator",
 		})
 	})
 
-	router.GET("/list", func(c *gin.Context) {
-		items := []string{"PWR", "GFR", "SFR", "LFR", "MSR", "SCWR"}
-		c.HTML(200, "sample-list.tmpl", gin.H{
-			"items":       items,
-			"showMessage": true,
-			"message":     "What kind of reactor do you want to run?",
+	router.GET("/inspector", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "inspector.tmpl", gin.H{
+			"title": "Component Inspector",
 		})
 	})
 
-	// Template with partial includes
-	router.GET("/main", func(c *gin.Context) {
-		c.HTML(200, "main.tmpl", gin.H{
-			"title": "Main Page",
+	router.GET("/analytics", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "analytics.tmpl", gin.H{
+			"title": "Analytics Pie",
 		})
 	})
 
