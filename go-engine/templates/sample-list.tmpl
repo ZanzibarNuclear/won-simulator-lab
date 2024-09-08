@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>List Example</title>
+</head>
+<body>
+    <h1>List of Items</h1>
+    <ul>
+    {{range .items}}
+        <li>{{.}}</li>
+    {{end}}
+    </ul>
+    
+    {{if .showMessage}}
+    <p>Message: {{.message}}</p>
+    {{end}}
+</body>
+</html>

@@ -30,6 +30,23 @@ func main() {
 			"msg":   "Want to run a nuclear power plant? That might be a tad dangerous. So how about a simulation?",
 		})
 	})
+
+	router.GET("/list", func(c *gin.Context) {
+		items := []string{"PWR", "GFR", "SFR", "LFR", "MSR", "SCWR"}
+		c.HTML(200, "sample-list.tmpl", gin.H{
+			"items":       items,
+			"showMessage": true,
+			"message":     "What kind of reactor do you want to run?",
+		})
+	})
+
+	// Template with partial includes
+	router.GET("/main", func(c *gin.Context) {
+		c.HTML(200, "main.tmpl", gin.H{
+			"title": "Main Page",
+		})
+	})
+
 	router.GET("/sims", getSimInfos)
 	router.POST("/sims", postSimInfo)
 	router.GET("/sims/:id", getSimInfoByID)
