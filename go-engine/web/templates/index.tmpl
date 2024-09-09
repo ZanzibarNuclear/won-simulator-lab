@@ -3,4 +3,59 @@
     <h2>Welcome to the World of Nuclear Simulator</h2>
     <p>This is the main content for the home page.</p>
     <p>You are amazing! Let us help you become even more amazing!</p>
+    <h3>Available Simulations</h3>
+    <ul id="simulations-list">
+        <!-- Simulations will be populated here -->
+    </ul>
+    <div id="active-simulation" style="display: none;">
+        <h3>Active Simulation</h3>
+        <h4 id="active-sim-name"></h4>
+        <p id="active-sim-motto"></p>
+        <p>Spawned at: <span id="active-sim-spawned"></span></p>
+        <h5>Components:</h5>
+        <ul id="active-sim-components"></ul>
+    </div>
+    <script>
+        function selectSimulation(sim) {
+            const activeSimDiv = document.getElementById('active-simulation');
+            document.getElementById('active-sim-name').textContent = sim.name;
+            document.getElementById('active-sim-motto').textContent = sim.motto;
+            document.getElementById('active-sim-spawned').textContent = new Date(sim.spawned_at).toLocaleString();
+            
+            const componentsList = document.getElementById('active-sim-components');
+            componentsList.innerHTML = ''; // Clear existing components
+            
+            fetch(`/api/sims/${sim.id}/components`)
+                .then(response => response.json())
+                .then(components => {
+                    components.forEach(component => {
+                        const li = document.createElement('li');
+                        li.textContent = `${component.Name}`;
+                        componentsList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error fetching components:', error));
+            
+            activeSimDiv.style.display = 'block';
+        }
+
+        fetch('/api/sims')
+            .then(response => response.json())
+            .then(simulations => {
+                const simulationsList = document.getElementById('simulations-list');
+                simulations.forEach(sim => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.textContent = `${sim.name} - "${sim.motto}"`;
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        selectSimulation(sim);
+                    };
+                    li.appendChild(a);
+                    simulationsList.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error fetching simulations:', error));
+    </script>
 {{end}}
