@@ -50,11 +50,12 @@ func main() {
 		})
 	})
 
-	// router.GET("/analytics", func(c *gin.Context) {
-	// 	c.HTML(http.StatusOK, "analytics.tmpl", gin.H{
-	// 		"title": "Analytics Pie",
-	// 	})
-	// })
+	router.GET("/analysis", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "layout.html", gin.H{
+			"title":    "Simulation Analysis",
+			"template": "analysis",
+		})
+	})
 
 	router.GET("/api/sims/:id/components/:name", func(c *gin.Context) {
 		simulationID := c.Param("id")
