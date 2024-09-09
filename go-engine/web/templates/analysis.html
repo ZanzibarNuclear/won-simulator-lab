@@ -1,0 +1,80 @@
+{{define "title"}}WoN Simulator - Analysis{{end}}
+
+{{define "analysis"}}
+<h2>Simulation Analysis</h2>
+
+<div id="charts-container">
+    <div class="chart">
+        <h3>Temperature Over Time</h3>
+        <canvas id="temperatureChart"></canvas>
+    </div>
+    <div class="chart">
+        <h3>Pressure Over Time</h3>
+        <canvas id="pressureChart"></canvas>
+    </div>
+    <div class="chart">
+        <h3>Power Output Over Time</h3>
+        <canvas id="powerChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Function to generate random data (replace with actual data fetching)
+    function generateData(count) {
+        return Array.from({ length: count }, () => Math.random() * 100);
+    }
+
+    // Function to create a chart
+    function createChart(ctx, label, data) {
+        return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: data.length }, (_, i) => i),
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Create charts when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const temperatureData = generateData(50);
+        const pressureData = generateData(50);
+        const powerData = generateData(50);
+
+        createChart(document.getElementById('temperatureChart').getContext('2d'), 'Temperature (°C)', temperatureData);
+        createChart(document.getElementById('pressureChart').getContext('2d'), 'Pressure (PSI)', pressureData);
+        createChart(document.getElementById('powerChart').getContext('2d'), 'Power Output (MW)', powerData);
+    });
+</script>
+
+<style>
+    #charts-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+    .chart {
+        width: 45%;
+        margin-bottom: 20px;
+    }
+    @media (max-width: 768px) {
+        .chart {
+            width: 100%;
+        }
+    }
+</style>
+{{end}}

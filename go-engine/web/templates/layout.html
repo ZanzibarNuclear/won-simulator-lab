@@ -14,6 +14,8 @@
             {{template "index" .}}
         {{else if eq .template "inspector"}}
             {{template "inspector" .}}
+        {{else if eq .template "operator"}}
+            {{template "operator" .}}
         {{else}}
             <p>Template not found</p>
         {{end}}

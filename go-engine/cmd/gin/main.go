@@ -30,14 +30,21 @@ func main() {
 	}
 
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "layout.tmpl", gin.H{
+		c.HTML(http.StatusOK, "layout.html", gin.H{
 			"title":    "WoN Simulator",
 			"template": "index",
 		})
 	})
 
+	router.GET("/operator", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "layout.html", gin.H{
+			"title":    "Simulator Operator",
+			"template": "operator",
+		})
+	})
+
 	router.GET("/inspector", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "layout.tmpl", gin.H{
+		c.HTML(http.StatusOK, "layout.html", gin.H{
 			"title":    "Component Inspector",
 			"template": "inspector",
 		})
@@ -84,7 +91,8 @@ func main() {
 
 	router.POST("/api/sims", createSimulation)
 	router.GET("/api/sims", getSimInfos)
-	// router.GET("/api/sims/:id", getSimInfoByID)
+	router.GET("/api/sims/:id", getSimInfo)
+	router.GET("/api/sims/:id/status", getSimStatus)
 	// router.PUT("/sims/:id", updateSimInfo)
 	// router.DELETE("/sims/:id", deleteSimInfo)
 	router.GET("/api/sims/:id/components", getComponents)
@@ -100,6 +108,17 @@ func getSimInfos(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, simInfos)
+}
+
+func getSimInfo(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, simulation.Info())
 }
 
 func getComponents(c *gin.Context) {
@@ -134,29 +153,17 @@ func createSimulation(c *gin.Context) {
 	c.JSON(http.StatusCreated, newSim.Info())
 }
 
-// func postSimInfo(c *gin.Context) {
-// 	var newSimInfo simInfo
+func getSimStatus(c *gin.Context) {
+	simulationID := c.Param("id")
 
-// 	if err := c.BindJSON(&newSimInfo); err != nil {
-// 		return
-// 	}
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
 
-// 	newSimInfo.SpawnedAt = time.Now()
-
-// 	simInfos = append(simInfos, newSimInfo)
-// 	c.IndentedJSON(http.StatusCreated, newSimInfo)
-// }
-
-// func getSimInfoByID(c *gin.Context) {
-// 	id := c.Param("id")
-// 	for _, a := range simInfos {
-// 		if a.ID == id {
-// 			c.IndentedJSON(http.StatusOK, a)
-// 			return
-// 		}
-// 	}
-// 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "sim not found"})
-// }
+	c.JSON(http.StatusOK, simulation.Status())
+}
 
 // func updateSimInfo(c *gin.Context) {
 // 	id := c.Param("id")

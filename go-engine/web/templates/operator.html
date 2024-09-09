@@ -1,0 +1,90 @@
+{{define "title"}}WoN Simulator - Operator{{end}}
+
+{{define "operator"}}
+<div class="operator-container">
+    <div class="sim-info">
+        <h2>Simulator Highlights</h2>
+        <p>ID: <span id="active-sim-id"></span></p>
+        <p>Name: <span id="active-sim-name"></span></p>
+        <p>Motto: <span id="active-sim-motto"></span></p>
+        <p>Spawned At: <span id="active-sim-spawned-at"></span></p>
+    </div>
+
+    <div class="sim-status">
+        <h3>Operational Status</h3>
+        <pre id="status-display">No status available</pre>
+    </div>
+
+    <div class="sim-controls">
+        <h3>Simulator Controls</h3>
+        <button id="start-sim">Start Simulation</button>
+        <button id="stop-sim">Stop Simulation</button>
+        <div class="advance-control">
+            <input type="number" id="advance-steps" min="1" value="1">
+            <button id="advance-sim">Advance Simulation</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeSimId = null;
+
+    function updateSimInfo(simInfo) {
+        document.getElementById('active-sim-id').textContent = simInfo.id;
+        document.getElementById('active-sim-name').textContent = simInfo.name;
+        document.getElementById('active-sim-motto').textContent = simInfo.motto;
+        document.getElementById('active-sim-spawned-at').textContent = new Date(simInfo.spawned_at).toLocaleString();
+        activeSimId = simInfo.id;
+    }
+
+    function updateStatus(status) {
+        document.getElementById('status-display').textContent = JSON.stringify(status, null, 2);
+    }
+
+    document.getElementById('start-sim').addEventListener('click', () => {
+        if (!activeSimId) return;
+        fetch(`/api/sims/${activeSimId}/start`, { method: 'POST' })
+            .then(response => response.json())
+            .then(status => updateStatus(status))
+            .catch(error => console.error('Error:', error));
+    });
+
+    document.getElementById('stop-sim').addEventListener('click', () => {
+        if (!activeSimId) return;
+        fetch(`/api/sims/${activeSimId}/stop`, { method: 'POST' })
+            .then(response => response.json())
+            .then(status => updateStatus(status))
+            .catch(error => console.error('Error:', error));
+    });
+
+    document.getElementById('advance-sim').addEventListener('click', () => {
+        if (!activeSimId) return;
+        const steps = document.getElementById('advance-steps').value;
+        fetch(`/api/sims/${activeSimId}/advance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ steps: parseInt(steps) })
+        })
+            .then(response => response.json())
+            .then(status => updateStatus(status))
+            .catch(error => console.error('Error:', error));
+    });
+
+    // Fetch initial simulation info and status
+    const urlParams = new URLSearchParams(window.location.search);
+    const simId = urlParams.get('id');
+    if (simId) {
+        fetch(`/api/sims/${simId}`)
+            .then(response => response.json())
+            .then(simInfo => {
+                updateSimInfo(simInfo);
+                return fetch(`/api/sims/${simId}/status`);
+            })
+            .then(response => response.json())
+            .then(status => updateStatus(status))
+            .catch(error => console.error('Error:', error));
+    } else {
+        console.error('No simulation ID provided in URL');
+    }
+</script>
+{{end}}
