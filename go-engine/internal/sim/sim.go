@@ -61,6 +61,10 @@ func (s *Simulation) run(ticks int) {
 	}
 }
 
+func (s *Simulation) Components() []components.Component {
+	return s.components
+}
+
 // Add this new method to update the environment
 func (s *Simulation) updateEnvironment() {
 	// This is a simple example. You might want to implement more complex weather patterns

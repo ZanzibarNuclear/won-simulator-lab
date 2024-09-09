@@ -1,3 +1,10 @@
-<header>
-    {{template "components/nav.tmpl" .}}
-</header>
+{{define "header"}}
+    <header>
+        <h1>World of Nuclear Simulator</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/inspector">Inspector</a>
+            <a href="/analytics">Analytics</a>
+        </nav>
+    </header>
+{{end}}

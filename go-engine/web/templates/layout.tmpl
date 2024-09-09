@@ -3,9 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{template "title" .}}</title>
+    <title>{{ template "title" . }}</title>
 </head>
 <body>
-    {{template "main" .}}
+    {{ template "header" . }}
+    
+    <main>
+        {{if eq .template "index"}}
+            {{template "index" .}}
+        {{else if eq .template "inspector"}}
+            {{template "inspector" .}}
+        {{else}}
+            <p>Template not found</p>
+        {{end}}
+    </main>
+
+    {{ template "footer" . }}
 </body>
 </html>

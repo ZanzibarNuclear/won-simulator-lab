@@ -1,5 +1,38 @@
-{{define "title"}}Component Inspector{{end}}
-{{define "main"}}
-    <h1>Component Inspector</h1>
-    <p>Zoom in to the details of the selected component...</p>
+{{define "title"}}Component Inspector - WoN Simulator{{end}}
+
+{{define "inspector"}}
+<h2>Component Inspector</h2>
+<div id="component-list">
+    <h3>Simulation Components</h3>
+    <ul>
+        <li>
+            <strong>Boiler:</strong> 
+            <span id="boiler-status">Status: Unknown</span>
+            <button onclick="inspectComponent('boiler')">Inspect</button>
+        </li>
+        <li>
+            <strong>Turbine:</strong> 
+            <span id="turbine-status">Status: Unknown</span>
+            <button onclick="inspectComponent('turbine')">Inspect</button>
+        </li>
+        <!-- Add more components as needed -->
+    </ul>
+</div>
+
+<div id="component-details">
+    <h3>Component Details</h3>
+    <pre id="component-info">Select a component to inspect</pre>
+</div>
+
+<script>
+function inspectComponent(componentName) {
+    fetch(`/api/component/${componentName}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('component-info').textContent = JSON.stringify(data, null, 2);
+            document.getElementById(`${componentName}-status`).textContent = `Status: ${data.status || 'Unknown'}`;
+        })
+        .catch(error => console.error('Error:', error));
+}
+</script>
 {{end}}
