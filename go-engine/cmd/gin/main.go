@@ -43,6 +43,12 @@ func main() {
 		})
 	})
 
+	// router.GET("/analytics", func(c *gin.Context) {
+	// 	c.HTML(http.StatusOK, "analytics.tmpl", gin.H{
+	// 		"title": "Analytics Pie",
+	// 	})
+	// })
+
 	router.GET("/api/sims/:id/components/:name", func(c *gin.Context) {
 		simulationID := c.Param("id")
 		componentName := c.Param("name")
@@ -76,18 +82,12 @@ func main() {
 		}
 	})
 
-	// router.GET("/analytics", func(c *gin.Context) {
-	// 	c.HTML(http.StatusOK, "analytics.tmpl", gin.H{
-	// 		"title": "Analytics Pie",
-	// 	})
-	// })
-
+	router.POST("/api/sims", createSimulation)
 	router.GET("/api/sims", getSimInfos)
-	router.GET("/api/sims/:id/components", getComponents)
-	// router.POST("/sims", postSimInfo)
-	// router.GET("/sims/:id", getSimInfoByID)
+	// router.GET("/api/sims/:id", getSimInfoByID)
 	// router.PUT("/sims/:id", updateSimInfo)
 	// router.DELETE("/sims/:id", deleteSimInfo)
+	router.GET("/api/sims/:id/components", getComponents)
 
 	router.Run(":8080")
 }
@@ -112,6 +112,26 @@ func getComponents(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, simulation.Components())
+}
+
+func createSimulation(c *gin.Context) {
+	var simData struct {
+		Name  string `json:"name" binding:"required"`
+		Motto string `json:"motto" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&simData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	newSim := sim.NewSimulation(simData.Name, simData.Motto)
+	newSim.AddComponent(sim.NewBoiler("Boilerator 37"))
+	newSim.AddComponent(sim.NewTurbine("Turbinator 42"))
+
+	simCache[newSim.ID()] = newSim
+
+	c.JSON(http.StatusCreated, newSim.Info())
 }
 
 // func postSimInfo(c *gin.Context) {

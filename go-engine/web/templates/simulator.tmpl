@@ -1,0 +1,50 @@
+{{define "simulator"}}
+    <h2>Create New Simulation</h2>
+    <form id="new-sim-form">
+        <label for="sim-name">Simulation Name:</label>
+        <input type="text" id="sim-name" name="name" required>
+        <br>
+        <label for="sim-motto">Simulation Motto:</label>
+        <input type="text" id="sim-motto" name="motto" required>
+        <br>
+        <button type="submit">Create Simulation</button>
+    </form>
+
+    <div id="sim-info" style="display: none;">
+        <h3>New Simulation Created</h3>
+        <p>ID: <span id="sim-id"></span></p>
+        <p>Name: <span id="sim-name-display"></span></p>
+        <p>Motto: <span id="sim-motto-display"></span></p>
+        <p>Spawned At: <span id="sim-spawned-at"></span></p>
+    </div>
+
+    <script>
+        document.getElementById('new-sim-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('sim-name').value,
+                motto: document.getElementById('sim-motto').value
+            };
+
+            fetch('/api/sims', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('sim-id').textContent = data.id;
+                document.getElementById('sim-name-display').textContent = data.name;
+                document.getElementById('sim-motto-display').textContent = data.motto;
+                document.getElementById('sim-spawned-at').textContent = new Date(data.spawned_at).toLocaleString();
+                document.getElementById('sim-info').style.display = 'block';
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+{{end}}

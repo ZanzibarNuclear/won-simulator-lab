@@ -15,6 +15,7 @@
         <h5>Components:</h5>
         <ul id="active-sim-components"></ul>
     </div>
+    {{template "simulator" .}}
     <script>
         function selectSimulation(sim) {
             const activeSimDiv = document.getElementById('active-simulation');
