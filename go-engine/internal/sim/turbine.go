@@ -19,8 +19,8 @@ func NewTurbine(name string) *Turbine {
 	}
 }
 
-func (t *Turbine) Update(env *Environment, otherComponents []Component) {
-	boiler := FindBoiler(otherComponents)
+func (t *Turbine) Update(env *Environment, s *Simulation) {
+	boiler := s.FindBoiler()
 	if boiler == nil {
 		fmt.Println("No boiler found")
 		return

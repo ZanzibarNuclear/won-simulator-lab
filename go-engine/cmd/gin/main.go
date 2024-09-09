@@ -8,16 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// type simmer struct {
-// 	about sim.SimInfo
-// 	sim   *sim.Simulation
-// }
-
-// var simulators = []sim.SimInfo{
-// 	{ID: "1", Name: "Simmy", Motto: "Make it hot. Make it go.", SpawnedAt: time.Now()},
-// 	{ID: "2", Name: "Gloria", Motto: "Neutrons are my thing.", SpawnedAt: time.Now()},
-// 	{ID: "3", Name: "Power Pete", Motto: "Meeting your energy demands, day by day.", SpawnedAt: time.Now()},
-// }
+var starter = []map[string]string{
+	{"Name": "Simmy", "Motto": "Make it hot. Make it go."},
+	{"Name": "Gloria", "Motto": "Neutrons are my thing."},
+	{"Name": "Power Pete", "Motto": "Meeting your energy demands, day by day."},
+}
 
 func main() {
 	router := gin.Default()
@@ -25,11 +20,14 @@ func main() {
 
 	router.StaticFile("/favicon.ico", "./web/assets/favicon.ico")
 
+	simCache := make(map[string]*sim.Simulation)
+	for _, s := range starter {
+		simulation := sim.NewSimulation(s["Name"], s["Motto"])
+		simulation.AddComponent(sim.NewBoiler("Billy Boiler"))
+		simulation.AddComponent(sim.NewTurbine("Tilly Turner"))
+		simCache[simulation.ID()] = simulation
+	}
 	
-	simulation := sim.NewSimulation()
-	simulation.AddComponent(sim.NewBoiler("Main Boiler"))
-	simulation.AddComponent(sim.NewTurbine("Steam Turbine"))
-
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layout.tmpl", gin.H{
 			"title":    "WoN Simulator",
@@ -54,7 +52,7 @@ func main() {
 		switch componentName {
 		case "boiler":
 			// TODO: move finders to simulation so that it can supply the component slice
-			if boiler := sim.FindBoiler(simulation.Components()); boiler != nil {
+			if boiler := sim.FindBoiler(); boiler != nil {
 				componentInfo = boiler.Status()
 			}
 		case "turbine":

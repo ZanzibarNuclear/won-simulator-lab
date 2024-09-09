@@ -29,7 +29,7 @@ type Simulation struct {
 func NewSimulation(name string, motto string) *Simulation {
 	return &Simulation{
 		info: SimInfo{
-			ID:        "sim-1",
+			ID:        fmt.Sprintf("sim-%s", generateRandomID(8)),
 			Name:      name,
 			Motto:     motto,
 			SpawnedAt: time.Now(),
@@ -67,14 +67,36 @@ func (s *Simulation) run(ticks int) {
 		s.updateEnvironment()
 
 		for _, component := range s.components {
-			component.Update(&s.environment, s.components)
+			component.Update(&s.environment, s)
 		}
 		s.PrintStatus()
 	}
 }
 
+func (s *Simulation) ID() string {
+	return s.info.ID
+}
+
 func (s *Simulation) Components() []Component {
 	return s.components
+}
+
+func (s *Simulation) FindBoiler() *Boiler {
+	for _, component := range s.components {
+		if boiler, ok := component.(*Boiler); ok {
+			return boiler
+		}
+	}
+	return nil
+}
+
+func (s *Simulation) FindTurbine() *Turbine {
+	for _, component := range s.components {
+		if turbine, ok := component.(*Turbine); ok {
+			return turbine
+		}
+	}
+	return nil
 }
 
 // Add this new method to update the environment

@@ -9,7 +9,7 @@
 package sim
 
 type Component interface {
-	Update(env *Environment, otherComponents []Component)
+	Update(env *Environment, s *Simulation)
 	PrintStatus()
 	Status() map[string]interface{}
 	GetName() string
@@ -22,23 +22,4 @@ type BaseComponent struct {
 func (b *BaseComponent) GetName() string {
 	return b.Name
 }
-
-func FindBoiler(components []Component) *Boiler {
-	for _, component := range components {
-		if boiler, ok := component.(*Boiler); ok {
-			return boiler
-		}
-	}
-	return nil
-}
-
-func FindTurbine(components []Component) *Turbine {
-	for _, component := range components {
-		if turbine, ok := component.(*Turbine); ok {
-			return turbine
-		}
-	}
-	return nil
-}
-
 
