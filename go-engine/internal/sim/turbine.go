@@ -1,9 +1,8 @@
-package components
+package sim
 
 import (
 	"fmt"
 	"math"
-	"won/sim-lab/go-engine/internal/common"
 )
 
 type Turbine struct {
@@ -15,13 +14,13 @@ type Turbine struct {
 func NewTurbine(name string) *Turbine {
 	return &Turbine{
 		BaseComponent: BaseComponent{Name: name},
-		maxRpm:        common.TURBINE_MAX_RPM,
+		maxRpm:        TURBINE_MAX_RPM,
 		rpm:           0,
 	}
 }
 
-func (t *Turbine) Update(env *common.Environment, otherComponents []Component) {
-	boiler := FindBoiler(otherComponents)
+func (t *Turbine) Update(env *Environment, s *Simulation) {
+	boiler := s.FindBoiler()
 	if boiler == nil {
 		fmt.Println("No boiler found")
 		return

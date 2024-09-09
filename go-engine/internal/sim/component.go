@@ -6,14 +6,10 @@
 // power plant, as well as an implementation of each specific component.
 // While each component has its own characteristics, they share
 // common properties and interactions with the simulation.
-package components
-
-import (
-	"won/sim-lab/go-engine/internal/common"
-)
+package sim
 
 type Component interface {
-	Update(env *common.Environment, otherComponents []Component)
+	Update(env *Environment, s *Simulation)
 	PrintStatus()
 	Status() map[string]interface{}
 	GetName() string
@@ -26,23 +22,4 @@ type BaseComponent struct {
 func (b *BaseComponent) GetName() string {
 	return b.Name
 }
-
-func FindBoiler(components []Component) *Boiler {
-	for _, component := range components {
-		if boiler, ok := component.(*Boiler); ok {
-			return boiler
-		}
-	}
-	return nil
-}
-
-func FindTurbine(components []Component) *Turbine {
-	for _, component := range components {
-		if turbine, ok := component.(*Turbine); ok {
-			return turbine
-		}
-	}
-	return nil
-}
-
 
