@@ -2,39 +2,33 @@ package main
 
 import (
 	"net/http"
-	"time"
 
-	"won/sim-lab/go-engine/internal/components"
 	"won/sim-lab/go-engine/internal/sim"
 
 	"github.com/gin-gonic/gin"
 )
 
-type simInfo struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Motto     string    `json:"motto"`
-	SpawnedAt time.Time `json:"spawned_at"`
-}
+// type simmer struct {
+// 	about sim.SimInfo
+// 	sim   *sim.Simulation
+// }
 
-type simmer struct {
-	about simInfo
-	sim   *sim.Simulation
-}
-
-var simInfos = []simInfo{
-	{ID: "1", Name: "Simmy", Motto: "Make it hot. Make it go.", SpawnedAt: time.Now()},
-	{ID: "2", Name: "Gloria", Motto: "Neutrons are my thing.", SpawnedAt: time.Now()},
-	{ID: "3", Name: "Power Pete", Motto: "Meeting your energy demands, day by day.", SpawnedAt: time.Now()},
-}
+// var simulators = []sim.SimInfo{
+// 	{ID: "1", Name: "Simmy", Motto: "Make it hot. Make it go.", SpawnedAt: time.Now()},
+// 	{ID: "2", Name: "Gloria", Motto: "Neutrons are my thing.", SpawnedAt: time.Now()},
+// 	{ID: "3", Name: "Power Pete", Motto: "Meeting your energy demands, day by day.", SpawnedAt: time.Now()},
+// }
 
 func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("web/templates/*")
 
+	router.StaticFile("/favicon.ico", "./web/assets/favicon.ico")
+
+	
 	simulation := sim.NewSimulation()
-	simulation.AddComponent(components.NewBoiler("Main Boiler"))
-	simulation.AddComponent(components.NewTurbine("Steam Turbine"))
+	simulation.AddComponent(sim.NewBoiler("Main Boiler"))
+	simulation.AddComponent(sim.NewTurbine("Steam Turbine"))
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layout.tmpl", gin.H{
@@ -60,11 +54,11 @@ func main() {
 		switch componentName {
 		case "boiler":
 			// TODO: move finders to simulation so that it can supply the component slice
-			if boiler := components.FindBoiler(simulation.Components()); boiler != nil {
+			if boiler := sim.FindBoiler(simulation.Components()); boiler != nil {
 				componentInfo = boiler.Status()
 			}
 		case "turbine":
-			if turbine := components.FindTurbine(simulation.Components()); turbine != nil {
+			if turbine := sim.FindTurbine(simulation.Components()); turbine != nil {
 				componentInfo = turbine.Status()
 			}
 		default:

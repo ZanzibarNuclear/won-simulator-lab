@@ -3,8 +3,6 @@ package sim
 import (
 	"fmt"
 	"time"
-	"won/sim-lab/go-engine/internal/common"
-	"won/sim-lab/go-engine/internal/components"
 )
 
 type Clock struct {
@@ -21,26 +19,40 @@ func (c *Clock) Tick() {
 }
 
 type Simulation struct {
-	components  []components.Component
+	info        SimInfo
+	components  []Component
 	clock       Clock
-	environment common.Environment
+	environment Environment
 	running     bool
 }
 
-func NewSimulation() *Simulation {
+func NewSimulation(name string, motto string) *Simulation {
 	return &Simulation{
-		components: make([]components.Component, 0),
+		info: SimInfo{
+			ID:        "sim-1",
+			Name:      name,
+			Motto:     motto,
+			SpawnedAt: time.Now(),
+		},
+		components: make([]Component, 0),
 		clock: Clock{
 			startedAt:   time.Date(2000, 1, 1, 8, 0, 0, 0, time.FixedZone("EST", -5*60*60)),
 			currentIter: 0,
 		},
-		environment: common.Environment{
+		environment: Environment{
 			Weather: "Sunny", // Initialize with a default weather
 		},
 	}
 }
 
-func (s *Simulation) AddComponent(p components.Component) {
+type SimInfo struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Motto     string    `json:"motto"`
+	SpawnedAt time.Time `json:"spawned_at"`
+}
+
+func (s *Simulation) AddComponent(p Component) {
 	s.components = append(s.components, p)
 }
 
@@ -61,7 +73,7 @@ func (s *Simulation) run(ticks int) {
 	}
 }
 
-func (s *Simulation) Components() []components.Component {
+func (s *Simulation) Components() []Component {
 	return s.components
 }
 
@@ -114,7 +126,7 @@ func (s *Simulation) Advance(iterations int) {
 
 func (s *Simulation) Start() {
 	if !s.running {
-		go s.run(common.YEAR_OF_MINUTES) // Run for a year by default
+		go s.run(YEAR_OF_MINUTES) // Run for a year by default
 	}
 }
 

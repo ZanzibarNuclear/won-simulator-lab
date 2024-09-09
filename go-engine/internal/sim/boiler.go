@@ -1,8 +1,7 @@
-package components
+package sim
 
 import (
 	"fmt"
-	"won/sim-lab/go-engine/internal/common"
 )
 
 // Example part implementation
@@ -25,7 +24,7 @@ func NewBoiler(name string) *Boiler {
 	return &Boiler{
 		BaseComponent:     BaseComponent{Name: name},
 		running:           false,
-		temperature:       common.ROOM_TEMPERATURE,
+		temperature:       ROOM_TEMPERATURE,
 		targetTemperature: 600,
 		heatEnergy:        0,
 		fuel: FuelConsumption{
@@ -36,7 +35,7 @@ func NewBoiler(name string) *Boiler {
 	}
 }
 
-func (p *Boiler) Update(env *common.Environment, otherComponents []Component) {
+func (p *Boiler) Update(env *Environment, otherComponents []Component) {
 
 	turbine := FindTurbine(otherComponents)
 	if turbine == nil {

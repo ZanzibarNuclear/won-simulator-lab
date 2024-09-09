@@ -6,14 +6,10 @@
 // power plant, as well as an implementation of each specific component.
 // While each component has its own characteristics, they share
 // common properties and interactions with the simulation.
-package components
-
-import (
-	"won/sim-lab/go-engine/internal/common"
-)
+package sim
 
 type Component interface {
-	Update(env *common.Environment, otherComponents []Component)
+	Update(env *Environment, otherComponents []Component)
 	PrintStatus()
 	Status() map[string]interface{}
 	GetName() string

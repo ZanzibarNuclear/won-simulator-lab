@@ -1,4 +1,4 @@
-package common
+package sim
 
 type Environment struct {
 	Weather string
