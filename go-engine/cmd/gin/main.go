@@ -14,20 +14,21 @@ var starter = []map[string]string{
 	{"Name": "Power Pete", "Motto": "Meeting your energy demands, day by day."},
 }
 
+var simCache = make(map[string]*sim.Simulation)
+
 func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("web/templates/*")
 
 	router.StaticFile("/favicon.ico", "./web/assets/favicon.ico")
 
-	simCache := make(map[string]*sim.Simulation)
 	for _, s := range starter {
 		simulation := sim.NewSimulation(s["Name"], s["Motto"])
 		simulation.AddComponent(sim.NewBoiler("Billy Boiler"))
 		simulation.AddComponent(sim.NewTurbine("Tilly Turner"))
 		simCache[simulation.ID()] = simulation
 	}
-	
+
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layout.tmpl", gin.H{
 			"title":    "WoN Simulator",
@@ -42,21 +43,25 @@ func main() {
 		})
 	})
 
-	router.GET("/api/component/:name", func(c *gin.Context) {
+	router.GET("/api/sims/:id/components/:name", func(c *gin.Context) {
+		simulationID := c.Param("id")
 		componentName := c.Param("name")
-		// Send back the component name as received
-		// c.JSON(http.StatusOK, gin.H{"name": componentName})
+
+		simulation, exists := simCache[simulationID]
+		if !exists {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+			return
+		}
 
 		var componentInfo map[string]interface{}
 
 		switch componentName {
 		case "boiler":
-			// TODO: move finders to simulation so that it can supply the component slice
-			if boiler := sim.FindBoiler(); boiler != nil {
+			if boiler := simulation.FindBoiler(); boiler != nil {
 				componentInfo = boiler.Status()
 			}
 		case "turbine":
-			if turbine := sim.FindTurbine(simulation.Components()); turbine != nil {
+			if turbine := simulation.FindTurbine(); turbine != nil {
 				componentInfo = turbine.Status()
 			}
 		default:
@@ -77,7 +82,7 @@ func main() {
 	// 	})
 	// })
 
-	// router.GET("/sims", getSimInfos)
+	router.GET("/api/sims", getSimInfos)
 	// router.POST("/sims", postSimInfo)
 	// router.GET("/sims/:id", getSimInfoByID)
 	// router.PUT("/sims/:id", updateSimInfo)
@@ -86,9 +91,15 @@ func main() {
 	router.Run(":8080")
 }
 
-// func getSimInfos(c *gin.Context) {
-// 	c.IndentedJSON(http.StatusOK, simInfos)
-// }
+func getSimInfos(c *gin.Context) {
+	var simInfos []sim.SimInfo
+
+	for _, simulation := range simCache {
+		simInfos = append(simInfos, simulation.Info())
+	}
+
+	c.JSON(http.StatusOK, simInfos)
+}
 
 // func postSimInfo(c *gin.Context) {
 // 	var newSimInfo simInfo

@@ -77,6 +77,10 @@ func (s *Simulation) ID() string {
 	return s.info.ID
 }
 
+func (s *Simulation) Info() SimInfo {
+	return s.info
+}
+
 func (s *Simulation) Components() []Component {
 	return s.components
 }
