@@ -20,7 +20,7 @@
         <button id="start-sim">Start Simulation</button>
         <button id="stop-sim">Stop Simulation</button>
         <div class="advance-control">
-            <input type="number" id="advance-steps" min="1" value="1">
+            <input type="number" id="advance-steps" min="1" value="5">
             <button id="advance-sim">Advance Simulation</button>
         </div>
     </div>
@@ -61,7 +61,7 @@
         if (!activeSimId) return;
         const steps = document.getElementById('advance-steps').value;
         fetch(`/api/sims/${activeSimId}/advance`, {
-            method: 'POST',
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ steps: parseInt(steps) })
         })

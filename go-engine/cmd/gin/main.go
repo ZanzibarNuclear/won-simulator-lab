@@ -17,17 +17,23 @@ var starter = []map[string]string{
 var simCache = make(map[string]*sim.Simulation)
 
 func main() {
+
+	// bootstrap starter simulations, something to work with
+	for _, s := range starter {
+		simulation := spawnSimulation(s["Name"], s["Motto"])
+		simCache[simulation.ID()] = simulation
+	}
+
+	// routes
+
 	router := gin.Default()
 	router.LoadHTMLGlob("web/templates/*")
 
+	// static assets
+
 	router.StaticFile("/favicon.ico", "./web/assets/favicon.ico")
 
-	for _, s := range starter {
-		simulation := sim.NewSimulation(s["Name"], s["Motto"])
-		simulation.AddComponent(sim.NewBoiler("Billy Boiler"))
-		simulation.AddComponent(sim.NewTurbine("Tilly Turner"))
-		simCache[simulation.ID()] = simulation
-	}
+	// page routes
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layout.html", gin.H{
@@ -56,6 +62,8 @@ func main() {
 			"template": "analysis",
 		})
 	})
+
+	// API routes
 
 	router.GET("/api/sims/:id/components/:name", func(c *gin.Context) {
 		simulationID := c.Param("id")
@@ -94,11 +102,46 @@ func main() {
 	router.GET("/api/sims", getSimInfos)
 	router.GET("/api/sims/:id", getSimInfo)
 	router.GET("/api/sims/:id/status", getSimStatus)
-	// router.PUT("/sims/:id", updateSimInfo)
-	// router.DELETE("/sims/:id", deleteSimInfo)
 	router.GET("/api/sims/:id/components", getComponents)
 
+	router.PUT("/api/sims/:id/advance", advanceSim)
+
 	router.Run(":8080")
+}
+
+func spawnSimulation(name, motto string) *sim.Simulation {
+	simulation := sim.NewSimulation(name, motto)
+	boiler := sim.NewBoiler("Billy Boiler")
+	boiler.TurnOn()
+	simulation.AddComponent(boiler)
+	simulation.AddComponent(sim.NewTurbine("Tilly Turner"))
+	return simulation
+}
+
+func advanceSim(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	var advanceData struct {
+		Steps int `json:"steps"`
+	}
+
+	if err := c.ShouldBindJSON(&advanceData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if advanceData.Steps == 0 {
+		advanceData.Steps = 1
+	}
+
+	simulation.Advance(advanceData.Steps)
+
+	c.JSON(http.StatusOK, simulation.Status())
 }
 
 func getSimInfos(c *gin.Context) {
@@ -145,10 +188,7 @@ func createSimulation(c *gin.Context) {
 		return
 	}
 
-	newSim := sim.NewSimulation(simData.Name, simData.Motto)
-	newSim.AddComponent(sim.NewBoiler("Boilerator 37"))
-	newSim.AddComponent(sim.NewTurbine("Turbinator 42"))
-
+	newSim := spawnSimulation(simData.Name, simData.Motto)
 	simCache[newSim.ID()] = newSim
 
 	c.JSON(http.StatusCreated, newSim.Info())
@@ -165,39 +205,3 @@ func getSimStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, simulation.Status())
 }
-
-// func updateSimInfo(c *gin.Context) {
-// 	id := c.Param("id")
-// 	var updatedSim simInfo
-
-// 	// Bind the JSON body to the updatedSim variable
-// 	if err := c.BindJSON(&updatedSim); err != nil {
-// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid input"})
-// 		return
-// 	}
-
-// 	for i, sim := range simInfos {
-// 		if sim.ID == id {
-// 			// Update the sim info, preserving the ID and SpawnedAt
-// 			updatedSim.ID = sim.ID
-// 			updatedSim.SpawnedAt = sim.SpawnedAt
-// 			simInfos[i] = updatedSim
-// 			c.IndentedJSON(http.StatusOK, updatedSim)
-// 			return
-// 		}
-// 	}
-
-// 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "sim not found"})
-// }
-
-// func deleteSimInfo(c *gin.Context) {
-// 	id := c.Param("id")
-// 	for index, a := range simInfos {
-// 		if a.ID == id {
-// 			simInfos = append(simInfos[:index], simInfos[index+1:]...)
-// 			c.IndentedJSON(http.StatusOK, a)
-// 			return
-// 		}
-// 	}
-// 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "sim not found"})
-// }
