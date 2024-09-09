@@ -83,6 +83,7 @@ func main() {
 	// })
 
 	router.GET("/api/sims", getSimInfos)
+	router.GET("/api/sims/:id/components", getComponents)
 	// router.POST("/sims", postSimInfo)
 	// router.GET("/sims/:id", getSimInfoByID)
 	// router.PUT("/sims/:id", updateSimInfo)
@@ -99,6 +100,18 @@ func getSimInfos(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, simInfos)
+}
+
+func getComponents(c *gin.Context) {
+	simulationID := c.Param("id")
+
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, simulation.Components())
 }
 
 // func postSimInfo(c *gin.Context) {
