@@ -10,50 +10,91 @@
             <p>Please enjoy what is here, and become a member of the World of Nuclear!</p>
         </div>
     </div>
-    <h3>Available Simulations</h3>
-    <ul id="simulations-list">
-        <!-- Simulations will be populated here -->
-    </ul>
-    {{template "simulator" .}}
-    <script>
-        function selectSimulation(sim) {
-            const activeSimDiv = document.getElementById('active-simulation');
-            document.getElementById('active-sim-name').textContent = sim.name;
-            document.getElementById('active-sim-motto').textContent = sim.motto;
-            document.getElementById('active-sim-spawned').textContent = new Date(sim.spawned_at).toLocaleString();
-            
-            const componentsList = document.getElementById('active-sim-components');
-            componentsList.innerHTML = ''; // Clear existing components
-            
-            fetch(`/api/sims/${sim.id}/components`)
-                .then(response => response.json())
-                .then(components => {
-                    components.forEach(component => {
-                        const li = document.createElement('li');
-                        li.textContent = `${component.Name}`;
-                        componentsList.appendChild(li);
-                    });
-                })
-                .catch(error => console.error('Error fetching components:', error));
-            
-            activeSimDiv.style.display = 'block';
-        }
+    <h3>Simulators in Operation</h3>
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <p>Play with one of these simulators. Or start a new one!</p>
+            <div style="text-align: right;">
+                <button id="buildSimButton" class="build-sim-button">Build Your Own</button>
+            </div>
+        </div>
 
-        fetch('/api/sims')
+        <div id="simPopup" class="sim-popup">
+            <div class="sim-popup-content">
+                <h3>Create New Simulator</h3>
+                <form id="simForm">
+                    <label for="simName">Name:</label>
+                    <input type="text" id="simName" name="simName" required>
+                    
+                    <label for="simMotto">Motto:</label>
+                    <input type="text" id="simMotto" name="simMotto" required>
+                    
+                    <div class="button-group">
+                        <button type="submit">Submit</button>
+                        <button type="button" id="cancelButton">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="simulations-grid" class="simulations-grid">
+        <!-- Simulations will be populated here -->
+    </div>
+
+    <script>
+        const buildSimButton = document.getElementById('buildSimButton');
+        const simPopup = document.getElementById('simPopup');
+        const simForm = document.getElementById('simForm');
+        const cancelButton = document.getElementById('cancelButton');
+
+        buildSimButton.addEventListener('click', () => {
+            simPopup.style.display = 'block';
+        });
+
+        cancelButton.addEventListener('click', () => {
+            simPopup.style.display = 'none';
+        });
+
+        simForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('simName').value;
+            const motto = document.getElementById('simMotto').value;
+
+            try {
+                const response = await fetch('/api/sims', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, motto }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create simulator');
+                }
+
+                const newSim = await response.json();
+                window.location.href = `/operator?id=${newSim.id}`;
+            } catch (error) {
+                console.error('Error creating simulator:', error);
+                alert('Failed to create simulator. Please try again.');
+            }
+        });
+
+fetch('/api/sims')
             .then(response => response.json())
             .then(simulations => {
-                const simulationsList = document.getElementById('simulations-list');
+                const simulationsGrid = document.getElementById('simulations-grid');
                 simulations.forEach(sim => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = `/operator?id=${sim.id}`;
-                    a.textContent = `${sim.name} - "${sim.motto}"`;
-                    a.onclick = (e) => {
-                        e.preventDefault();
-                        window.location.href = `/operator?id=${sim.id}`;
-                    };
-                    li.appendChild(a);
-                    simulationsList.appendChild(li);
+                    const card = document.createElement('div');
+                    card.className = 'sim-card';
+                    card.innerHTML = `
+                            <h3>${sim.name}</h3>
+                            <p><em>"${sim.motto}"</em></p>
+                            <p>Spawned: ${new Date(sim.spawned_at).toLocaleString()}</p>
+                            <button onclick="window.location.href='/operator?id=${sim.id}'">Operate</button>
+                        `;
+                    simulationsGrid.appendChild(card);
                 });
             })
             .catch(error => console.error('Error fetching simulations:', error));
