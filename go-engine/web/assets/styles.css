@@ -9,23 +9,37 @@ body {
 
 header {
   background-color: #333;
-  color: white;
+  color: #f6f2eb;
   padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.empty-left {
+  width: 40px;
+}
+
 .logo {
   font-size: 1.5rem;
   font-weight: bold;
+  align-items: center;
+}
+
+.logo-image {
+  height: 80px;
+  z-index: 1;
+  position: absolute;
+  top: 10px;
+  left: 20px;
 }
 
 .avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #ddd;
+  color: #0056b3;
+  background-color: #f6f2eb;
 }
 
 .container {
