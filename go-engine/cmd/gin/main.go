@@ -31,12 +31,14 @@ func main() {
 
 	// static assets
 
+	router.Static("/static", "./web/assets")
 	router.StaticFile("/favicon.ico", "./web/assets/favicon.ico")
 
 	// page routes
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layout.html", gin.H{
+			"active":   "home",
 			"title":    "WoN Simulator",
 			"template": "index",
 		})
@@ -44,6 +46,7 @@ func main() {
 
 	router.GET("/operator", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layout.html", gin.H{
+			"active":   "operator",
 			"title":    "Simulator Operator",
 			"template": "operator",
 		})
@@ -51,6 +54,7 @@ func main() {
 
 	router.GET("/inspector", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layout.html", gin.H{
+			"active":   "inspector",
 			"title":    "Component Inspector",
 			"template": "inspector",
 		})
@@ -58,6 +62,7 @@ func main() {
 
 	router.GET("/analysis", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "layout.html", gin.H{
+			"active":   "analysis",
 			"title":    "Simulation Analysis",
 			"template": "analysis",
 		})
