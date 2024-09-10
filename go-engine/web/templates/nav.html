@@ -2,18 +2,20 @@
 <nav>
     <ul>
         <li><a href="/" {{if eq .active "home"}}class="active"{{end}}>
-          <i class="fas fa-home nav-item-icon"></i> Home
+          <iconify-icon icon="ph:house"></iconify-icon> Home
         </a></li>
         <li><a href="/operator" {{if eq .active "operator"}}class="active"{{end}}>
-          <i class="fas fa-cogs nav-item-icon"></i>Operator
+          <iconify-icon icon="ph:gear-six"></iconify-icon> Operator
         </a></li>
         <li><a href="/inspector" {{if eq .active "inspector"}}class="active"{{end}}>
-          <i class="fas fa-search nav-item-icon"></i> Inspector
+          <iconify-icon icon="ph:magnifying-glass"></iconify-icon> Inspector
         </a></li>
         <li><a href="/analysis" {{if eq .active "analysis"}}class="active"{{end}}>
-          <i class="fas fa-chart-line nav-item-icon"></i> Analysis
+          <iconify-icon icon="ph:chart-line"></iconify-icon> Analysis
         </a></li>
-        <li><a href="https://worldofnuclear.com">World of Nuclear</a></li>
+        <li><a href="https://worldofnuclear.com">
+          <iconify-icon icon="ph:globe-hemisphere-west-duotone"></iconify-icon> World of Nuclear
+        </a></li>
     </ul>
 </nav>
 {{end}}
