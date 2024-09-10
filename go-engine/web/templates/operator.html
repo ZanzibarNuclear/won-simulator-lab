@@ -1,25 +1,58 @@
 {{define "operator"}}
 <div class="operator-container">
-    <div class="sim-info">
-        <h2>Simulator Highlights</h2>
-        <p>ID: <span id="active-sim-id"></span></p>
-        <p>Name: <span id="active-sim-name"></span></p>
-        <p>Motto: <span id="active-sim-motto"></span></p>
-        <p>Spawned At: <span id="active-sim-spawned-at"></span></p>
-    </div>
-
-    <div class="sim-status">
-        <h3>Operational Status</h3>
-        <pre id="status-display">No status available</pre>
+    <div class="sim-card">
+        <h2><span id="active-sim-name"></span></h2>
+        <div class="sim-details">
+            <p><strong>ID:</strong> <span id="active-sim-id"></span></p>
+            <p><strong>Motto:</strong> <span id="active-sim-motto"></span></p>
+            <p><strong>Spawned At:</strong> <span id="active-sim-spawned-at"></span></p>
+        </div>
     </div>
 
     <div class="sim-controls">
         <h3>Simulator Controls</h3>
-        <button id="start-sim">Start Simulation</button>
-        <button id="stop-sim">Stop Simulation</button>
         <div class="advance-control">
-            <input type="number" id="advance-steps" min="1" value="5">
+            <select id="advance-steps">
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <select id="advance-unit">
+                <option value="minutes" selected>Minutes</option>
+                <option value="hours">Hours</option>
+                <option value="days">Days</option>
+            </select>
             <button id="advance-sim">Advance Simulation</button>
+        </div>
+    </div>
+
+    <div class="sim-status">
+        <h3>Operational Status</h3>
+        <div class="top-level-status sim-card">
+            <div id="overall-status" class="sim-details">
+                <p><strong>Simulation Time:</strong> <span id="current-time">N/A</span></p>
+                <p><strong>Operational State:</strong> <span id="operational-state">N/A</span></p>
+                <p><strong>Power Output:</strong> <span id="power-output">N/A</span> MW</p>
+                <p><strong>Core Temperature:</strong> <span id="core-temperature">N/A</span> °C</p>
+                <p><strong>Coolant Pressure:</strong> <span id="coolant-pressure">N/A</span> MPa</p>
+            </div>
+        </div>
+
+        <div id="status-display">
+            <div class="component-status">
+                <h4>Component Status</h4>
+                <div id="component-details" class="sim-card">
+                    <div class="sim-details">
+                        <p><strong>Reactor:</strong> <span id="reactor-status">N/A</span></p>
+                        <p><strong>Turbine:</strong> <span id="turbine-status">N/A</span></p>
+                        <p><strong>Generator:</strong> <span id="generator-status">N/A</span></p>
+                        <p><strong>Condenser:</strong> <span id="condenser-status">N/A</span></p>
+                        <p><strong>Cooling Tower:</strong> <span id="cooling-tower-status">N/A</span></p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -36,32 +69,30 @@
     }
 
     function updateStatus(status) {
-        document.getElementById('status-display').textContent = JSON.stringify(status, null, 2);
+        const formattedTime = formatDateTime(new Date(status.simTime));
+        document.getElementById('current-time').textContent = formattedTime;
+        document.getElementById('operational-state').textContent = status.running ? 'Running' : 'Stopped';
+        document.getElementById('power-output').textContent = status.powerOutput || 'N/A';
+        document.getElementById('core-temperature').textContent = status.coreTemperature || 'N/A';
+        document.getElementById('coolant-pressure').textContent = status.coolantPressure || 'N/A';
     }
-
-    document.getElementById('start-sim').addEventListener('click', () => {
-        if (!activeSimId) return;
-        fetch(`/api/sims/${activeSimId}/start`, { method: 'POST' })
-            .then(response => response.json())
-            .then(status => updateStatus(status))
-            .catch(error => console.error('Error:', error));
-    });
-
-    document.getElementById('stop-sim').addEventListener('click', () => {
-        if (!activeSimId) return;
-        fetch(`/api/sims/${activeSimId}/stop`, { method: 'POST' })
-            .then(response => response.json())
-            .then(status => updateStatus(status))
-            .catch(error => console.error('Error:', error));
-    });
 
     document.getElementById('advance-sim').addEventListener('click', () => {
         if (!activeSimId) return;
         const steps = document.getElementById('advance-steps').value;
+        const unit = document.getElementById('advance-unit').value;
+        let totalSteps = parseInt(steps);
+
+        if (unit === 'hours') {
+            totalSteps *= 60;
+        } else if (unit === 'days') {
+            totalSteps *= 1440; // 24 hours * 60 minutes
+        }
+
         fetch(`/api/sims/${activeSimId}/advance`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ steps: parseInt(steps) })
+            body: JSON.stringify({ steps: totalSteps })
         })
             .then(response => response.json())
             .then(status => updateStatus(status))
