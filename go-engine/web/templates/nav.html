@@ -1,0 +1,20 @@
+{{define "nav"}}
+<nav>
+    <ul>
+        <li><a href="/" {{if eq .active "home"}}class="active"{{end}}>
+          <i class="fas fa-home nav-item-icon"></i> Home
+        </a></li>
+        <li><a href="/operator" {{if eq .active "operator"}}class="active"{{end}}>
+          <i class="fas fa-cogs nav-item-icon"></i>Operator
+        </a></li>
+        <li><a href="/inspector" {{if eq .active "inspector"}}class="active"{{end}}>
+          <i class="fas fa-search nav-item-icon"></i> Inspector
+        </a></li>
+        <li><a href="/analysis" {{if eq .active "analysis"}}class="active"{{end}}>
+          <i class="fas fa-chart-line nav-item-icon"></i> Analysis
+        </a></li>
+        <li><a href="https://worldofnuclear.com">World of Nuclear</a></li>
+    </ul>
+</nav>
+{{end}}
+
