@@ -98,6 +98,10 @@ func (s *Simulation) updateEnvironment() {
 
 func (s *Simulation) Status() map[string]interface{} {
 	status := map[string]interface{}{
+		"id":         s.info.ID,
+		"name":       s.info.Name,
+		"motto":      s.info.Motto,
+		"spawned_at": s.info.SpawnedAt,
 		"running":    s.running,
 		"simTime":    s.clock.SimTime(),
 		"weather":    s.environment.Weather,
@@ -112,6 +116,9 @@ func (s *Simulation) Status() map[string]interface{} {
 
 func (s *Simulation) PrintStatus() {
 	fmt.Println("----------------------------------------")
+	fmt.Printf("Name: %s\n", s.info.Name)
+	fmt.Printf("ID: %s\n", s.info.ID)
+	fmt.Printf("Motto: %s\n", s.info.Motto)
 	fmt.Printf("Sim Time: %s\n", s.clock.SimTime())
 	fmt.Printf("Started at: %s\n", s.clock.startedAt)
 	fmt.Printf("Is running: %t\n", s.running)
@@ -133,17 +140,18 @@ func (s *Simulation) Run(ticks int) {
 
 	defer func() {
 		s.running = false
-		fmt.Printf("Whew. That was a nice run. %d ticks.\n", cnt)
+		fmt.Println("Whew. That was a nice run.")
 		s.PrintStatus()
 	}()
 
+	fmt.Printf("Starting %d iterations\n", ticks)
 	for cnt = 0; cnt < ticks; cnt++ {
 		select {
 		case <-s.stopChan:
+			fmt.Printf("Interrupted after %d iterations\n", cnt)
 			return
 		default:
 			s.clock.Tick()
-			fmt.Printf("Starting iteration %d\n", s.clock.currentIter)
 			s.updateEnvironment()
 			for _, component := range s.components {
 				component.Update(&s.environment, s)
