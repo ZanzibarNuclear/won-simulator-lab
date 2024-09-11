@@ -24,6 +24,8 @@ type Simulation struct {
 	clock       Clock
 	environment Environment
 	running     bool
+
+	stopChan chan struct{}
 }
 
 func NewSimulation(name string, motto string) *Simulation {
@@ -34,7 +36,6 @@ func NewSimulation(name string, motto string) *Simulation {
 			Motto:     motto,
 			SpawnedAt: time.Now(),
 		},
-		components: make([]Component, 0),
 		clock: Clock{
 			startedAt:   time.Date(2000, 1, 1, 8, 0, 0, 0, time.FixedZone("EST", -5*60*60)),
 			currentIter: 0,
@@ -42,6 +43,8 @@ func NewSimulation(name string, motto string) *Simulation {
 		environment: Environment{
 			Weather: "Sunny", // Initialize with a default weather
 		},
+		components: make([]Component, 0),
+		stopChan:   make(chan struct{}),
 	}
 }
 
@@ -54,23 +57,6 @@ type SimInfo struct {
 
 func (s *Simulation) AddComponent(p Component) {
 	s.components = append(s.components, p)
-}
-
-func (s *Simulation) run(ticks int) {
-	s.running = true
-	defer func() { s.running = false }()
-
-	for i := 0; i < ticks; i++ {
-		s.clock.Tick()
-		fmt.Printf("Starting iteration %d\n", s.clock.currentIter)
-
-		s.updateEnvironment()
-
-		for _, component := range s.components {
-			component.Update(&s.environment, s)
-		}
-		s.PrintStatus()
-	}
 }
 
 func (s *Simulation) ID() string {
@@ -125,6 +111,7 @@ func (s *Simulation) Status() map[string]interface{} {
 }
 
 func (s *Simulation) PrintStatus() {
+	fmt.Println("----------------------------------------")
 	fmt.Printf("Sim Time: %s\n", s.clock.SimTime())
 	fmt.Printf("Started at: %s\n", s.clock.startedAt)
 	fmt.Printf("Is running: %t\n", s.running)
@@ -134,6 +121,35 @@ func (s *Simulation) PrintStatus() {
 		component.PrintStatus()
 	}
 	fmt.Println("----------------------------------------")
+}
+
+func (s *Simulation) Run(ticks int) {
+	// one running process at a time
+	if s.running {
+		return
+	}
+	var cnt int
+	s.running = true
+
+	defer func() {
+		s.running = false
+		fmt.Printf("Whew. That was a nice run. %d ticks.\n", cnt)
+		s.PrintStatus()
+	}()
+
+	for cnt = 0; cnt < ticks; cnt++ {
+		select {
+		case <-s.stopChan:
+			return
+		default:
+			s.clock.Tick()
+			fmt.Printf("Starting iteration %d\n", s.clock.currentIter)
+			s.updateEnvironment()
+			for _, component := range s.components {
+				component.Update(&s.environment, s)
+			}
+		}
+	}
 }
 
 func (s *Simulation) IsRunning() bool {
@@ -146,16 +162,17 @@ func (s *Simulation) CurrentTime() time.Time {
 
 func (s *Simulation) Advance(iterations int) {
 	if !s.running {
-		s.run(iterations)
+		s.stopChan = make(chan struct{})
+		go s.Run(iterations)
 	}
 }
 
-func (s *Simulation) Start() {
-	if !s.running {
-		go s.run(YEAR_OF_MINUTES) // Run for a year by default
-	}
+func (s *Simulation) AdvanceOneYear() {
+	s.Advance(YEAR_OF_MINUTES)
 }
 
 func (s *Simulation) Stop() {
-	// TODO: Implement stopping the simulation
+	if s.running {
+		close(s.stopChan)
+	}
 }

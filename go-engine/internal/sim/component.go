@@ -23,3 +23,18 @@ func (b *BaseComponent) GetName() string {
 	return b.Name
 }
 
+// ComponentType represents the type of a component in the power plant simulation.
+type ComponentType int
+
+const (
+	Core ComponentType = iota
+	Pump
+	Condenser
+	SteamTurbine
+	Generator
+)
+
+// String returns the string representation of the ComponentType.
+func (ct ComponentType) String() string {
+	return [...]string{"Reactor Core", "Pump", "Condenser", "Steam Turbine", "Generator"}[ct]
+}
