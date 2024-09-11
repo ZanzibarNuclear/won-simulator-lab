@@ -110,6 +110,7 @@ func main() {
 	router.GET("/api/sims/:id/components", getComponents)
 
 	router.PUT("/api/sims/:id/advance", advanceSim)
+	router.PUT("/api/sims/:id/interrupt", interruptSim)
 
 	router.Run(":8080")
 }
@@ -145,6 +146,19 @@ func advanceSim(c *gin.Context) {
 	}
 
 	simulation.Advance(advanceData.Steps)
+
+	c.JSON(http.StatusOK, simulation.Status())
+}
+
+func interruptSim(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	simulation.Stop()
 
 	c.JSON(http.StatusOK, simulation.Status())
 }

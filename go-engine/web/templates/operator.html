@@ -6,6 +6,7 @@
             <p><strong>ID:</strong> <span id="active-sim-id"></span></p>
             <p><strong>Motto:</strong> <span id="active-sim-motto"></span></p>
             <p><strong>Spawned At:</strong> <span id="active-sim-spawned-at"></span></p>
+            <p><strong>Simulation Time:</strong> <span id="current-time"></span></p>
         </div>
     </div>
 
@@ -25,6 +26,7 @@
                 <option value="days">Days</option>
             </select>
             <button id="advance-sim">Advance Simulation</button>
+            <button id="pause-sim">Pause Simulation</button>
         </div>
     </div>
 
@@ -32,7 +34,6 @@
         <h3>Operational Status</h3>
         <div class="top-level-status sim-card">
             <div id="overall-status" class="sim-details">
-                <p><strong>Simulation Time:</strong> <span id="current-time">N/A</span></p>
                 <p><strong>Operational State:</strong> <span id="operational-state">N/A</span></p>
                 <p><strong>Power Output:</strong> <span id="power-output">N/A</span> MW</p>
                 <p><strong>Core Temperature:</strong> <span id="core-temperature">N/A</span> °C</p>
@@ -94,6 +95,14 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ steps: totalSteps })
         })
+            .then(response => response.json())
+            .then(status => updateStatus(status))
+            .catch(error => console.error('Error:', error));
+    });
+
+    document.getElementById('pause-sim').addEventListener('click', () => {
+        if (!activeSimId) return;
+        fetch(`/api/sims/${activeSimId}/interrupt`, { method: 'PUT' })
             .then(response => response.json())
             .then(status => updateStatus(status))
             .catch(error => console.error('Error:', error));
