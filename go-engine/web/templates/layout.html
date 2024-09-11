@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,26 +8,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="/static/scripts/helpers.js"></script>
     <title>{{ template "title" . }}</title>
 </head>
+
 <body>
     {{ template "header" . }}
     <div class="container">
         {{ template "nav" . }}
         <main>
-        {{if eq .template "index"}}
+            {{if eq .template "index"}}
             {{template "index" .}}
-        {{else if eq .template "inspector"}}
+            {{else if eq .template "inspector"}}
             {{template "inspector" .}}
-        {{else if eq .template "operator"}}
+            {{else if eq .template "operator"}}
             {{template "operator" .}}
-        {{else if eq .template "analysis"}}
+            {{else if eq .template "analysis"}}
             {{template "analysis" .}}
-        {{else}}
+            {{else}}
             <p>Template not found</p>
-        {{end}}
+            {{end}}
         </main>
     </div>
     {{ template "footer" . }}
 </body>
+
 </html>
