@@ -70,45 +70,12 @@ func main() {
 
 	// API routes
 
-	router.GET("/api/sims/:id/components/:name", func(c *gin.Context) {
-		simulationID := c.Param("id")
-		componentName := c.Param("name")
-
-		simulation, exists := simCache[simulationID]
-		if !exists {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
-			return
-		}
-
-		var componentInfo map[string]interface{}
-
-		switch componentName {
-		case "boiler":
-			if boiler := simulation.FindBoiler(); boiler != nil {
-				componentInfo = boiler.Status()
-			}
-		case "turbine":
-			if turbine := simulation.FindTurbine(); turbine != nil {
-				componentInfo = turbine.Status()
-			}
-		default:
-			c.JSON(http.StatusNotFound, gin.H{"error": "Component not found"})
-			return
-		}
-
-		if componentInfo != nil {
-			c.JSON(http.StatusOK, componentInfo)
-		} else {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Component not found"})
-		}
-	})
-
 	router.POST("/api/sims", createSimulation)
 	router.GET("/api/sims", getSimInfos)
 	router.GET("/api/sims/:id", getSimInfo)
 	router.GET("/api/sims/:id/status", getSimStatus)
 	router.GET("/api/sims/:id/components", getComponents)
-
+	router.GET("/api/sims/:id/components/:name", getComponentStatus)
 	router.PUT("/api/sims/:id/advance", advanceSim)
 	router.PUT("/api/sims/:id/interrupt", interruptSim)
 
@@ -117,10 +84,14 @@ func main() {
 
 func spawnSimulation(name, motto string) *sim.Simulation {
 	simulation := sim.NewSimulation(name, motto)
-	boiler := sim.NewBoiler("Billy Boiler")
-	boiler.TurnOn()
-	simulation.AddComponent(boiler)
-	simulation.AddComponent(sim.NewTurbine("Tilly Turner"))
+	simulation.AddComponent(sim.NewPrimaryLoop("Primary Loop"))
+	simulation.AddComponent(sim.NewSecondaryLoop("Secondary Loop"))
+	simulation.AddComponent(sim.NewReactorCore("Reactor Core"))
+	simulation.AddComponent(sim.NewPressurizer("Pressurizer"))
+	simulation.AddComponent(sim.NewSteamGenerator("Steam Generator"))
+	simulation.AddComponent(sim.NewSteamTurbine("Steam Turbine"))
+	simulation.AddComponent(sim.NewCondenser("Condenser"))
+	simulation.AddComponent(sim.NewGenerator("Power Generator"))
 	return simulation
 }
 
@@ -223,4 +194,45 @@ func getSimStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, simulation.Status())
+}
+
+func getComponentStatus(c *gin.Context) {
+	simulationID := c.Param("id")
+	componentName := c.Param("name")
+
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	var componentInfo map[string]interface{}
+
+	switch componentName {
+	case "PrimaryLoop":
+		componentInfo = simulation.FindPrimaryLoop().Status()
+	case "SecondaryLoop":
+		componentInfo = simulation.FindSecondaryLoop().Status()
+	case "ReactorCore":
+		componentInfo = simulation.FindReactorCore().Status()
+	case "Pressurizer":
+		componentInfo = simulation.FindPressurizer().Status()
+	case "SteamGenerator":
+		componentInfo = simulation.FindSteamGenerator().Status()
+	case "SteamTurbine":
+		componentInfo = simulation.FindSteamTurbine().Status()
+	case "Condenser":
+		componentInfo = simulation.FindCondenser().Status()
+	case "Generator":
+		componentInfo = simulation.FindGenerator().Status()
+	default:
+		c.JSON(http.StatusNotFound, gin.H{"error": "Component not found"})
+		return
+	}
+
+	if componentInfo != nil {
+		c.JSON(http.StatusOK, componentInfo)
+	} else {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Component not found"})
+	}
 }

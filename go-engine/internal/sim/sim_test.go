@@ -1,6 +1,7 @@
 package sim
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -55,17 +56,46 @@ func TestSimulationAdvanceAndStop(t *testing.T) {
 	// Initialize a simulation
 	sim := NewSimulation("Test Sim", "Safety First")
 
-	// Create a boiler and start it
-	boiler := NewBoiler("Main Boiler")
-	boiler.TurnOn()
+	// Add one of each component type
+	sim.AddComponent(NewPrimaryLoop("Lara's Primary Loop"))
+	sim.AddComponent(NewSecondaryLoop("Lana's Secondary Loop"))
+	sim.AddComponent(NewReactorCore("Corey the Reactor Core"))
+	sim.AddComponent(NewPressurizer("#1 Pressurizer"))
+	sim.AddComponent(NewSteamGenerator("Stevie the Steam Generator"))
+	sim.AddComponent(NewSteamTurbine("Tilly the Steam Turbine"))
+	sim.AddComponent(NewCondenser("Condie the Condenser"))
+	sim.AddComponent(NewGenerator("Flo the Power Generator"))
 
-	// Add the boiler
-	sim.AddComponent(boiler)
+	// Verify that components were added
+	expectedComponents := 8
+	if len(sim.components) != expectedComponents {
+		t.Errorf("Expected %d components, got %d", expectedComponents, len(sim.components))
+	}
 
-	// Create and add a turbine
-	turbine := NewTurbine("Main Turbine")
-	sim.AddComponent(turbine)
+	// Verify each component type
+	componentTypes := map[string]bool{
+		"*sim.PrimaryLoop":    false,
+		"*sim.SecondaryLoop":  false,
+		"*sim.ReactorCore":    false,
+		"*sim.Pressurizer":    false,
+		"*sim.SteamGenerator": false,
+		"*sim.SteamTurbine":   false,
+		"*sim.Generator":      false,
+		"*sim.Condenser":      false,
+	}
 
+	for _, component := range sim.components {
+		componentType := fmt.Sprintf("%T", component)
+		if _, exists := componentTypes[componentType]; exists {
+			componentTypes[componentType] = true
+		}
+	}
+
+	for componentType, found := range componentTypes {
+		if !found {
+			t.Errorf("Expected component of type %s, but it was not found", componentType)
+		}
+	}
 	// Advance the simulation 1000000 steps
 	sim.Advance(1000000)
 

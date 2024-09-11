@@ -5,12 +5,14 @@ import (
 )
 
 type Environment struct {
-	Weather string
+	Weather            string
+	AmbientTemperature float64
 }
 
 func NewEnvironment() *Environment {
 	return &Environment{
-		Weather: "sunny",
+		Weather:            "sunny",
+		AmbientTemperature: ROOM_TEMPERATURE,
 	}
 }
 

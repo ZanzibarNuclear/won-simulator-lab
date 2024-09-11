@@ -71,27 +71,79 @@ func (s *Simulation) Components() []Component {
 	return s.components
 }
 
-func (s *Simulation) FindBoiler() *Boiler {
+func (s *Simulation) FindPrimaryLoop() *PrimaryLoop {
 	for _, component := range s.components {
-		if boiler, ok := component.(*Boiler); ok {
-			return boiler
+		if primaryLoop, ok := component.(*PrimaryLoop); ok {
+			return primaryLoop
 		}
 	}
 	return nil
 }
 
-func (s *Simulation) FindTurbine() *Turbine {
+func (s *Simulation) FindReactorCore() *ReactorCore {
 	for _, component := range s.components {
-		if turbine, ok := component.(*Turbine); ok {
+		if reactorCore, ok := component.(*ReactorCore); ok {
+			return reactorCore
+		}
+	}
+	return nil
+}
+
+func (s *Simulation) FindPressurizer() *Pressurizer {
+	for _, component := range s.components {
+		if pressurizer, ok := component.(*Pressurizer); ok {
+			return pressurizer
+		}
+	}
+	return nil
+}
+
+func (s *Simulation) FindSteamGenerator() *SteamGenerator {
+	for _, component := range s.components {
+		if steamGenerator, ok := component.(*SteamGenerator); ok {
+			return steamGenerator
+		}
+	}
+	return nil
+}
+
+func (s *Simulation) FindSecondaryLoop() *SecondaryLoop {
+	for _, component := range s.components {
+		if secondaryLoop, ok := component.(*SecondaryLoop); ok {
+			return secondaryLoop
+		}
+	}
+	return nil
+}
+
+func (s *Simulation) FindSteamTurbine() *SteamTurbine {
+	for _, component := range s.components {
+		if turbine, ok := component.(*SteamTurbine); ok {
 			return turbine
 		}
 	}
 	return nil
 }
 
-// Add this new method to update the environment
+func (s *Simulation) FindCondenser() *Condenser {
+	for _, component := range s.components {
+		if condenser, ok := component.(*Condenser); ok {
+			return condenser
+		}
+	}
+	return nil
+}
+
+func (s *Simulation) FindGenerator() *Generator {
+	for _, component := range s.components {
+		if generator, ok := component.(*Generator); ok {
+			return generator
+		}
+	}
+	return nil
+}
+
 func (s *Simulation) updateEnvironment() {
-	// This is a simple example. You might want to implement more complex weather patterns
 	weathers := []string{"Sunny", "Cloudy", "Rainy", "Windy"}
 	s.environment.Weather = weathers[s.clock.currentIter%len(weathers)]
 }
