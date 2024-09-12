@@ -5,8 +5,9 @@
         <div class="sim-details">
             <p><strong>ID:</strong> <span id="active-sim-id"></span></p>
             <p><strong>Motto:</strong> <span id="active-sim-motto"></span></p>
-            <p><strong>Spawned At:</strong> <span id="active-sim-spawned-at"></span></p>
+            <p><strong>Started Simulation At:</strong> <span id="active-sim-spawned-at"></span></p>
             <p><strong>Simulation Time:</strong> <span id="current-time"></span></p>
+            <p><strong>Weather:</strong> <span id="current-weather"></span></p>
         </div>
     </div>
 
@@ -32,27 +33,13 @@
 
     <div class="sim-status">
         <h3>Operational Status</h3>
-        <div class="top-level-status sim-card">
-            <div id="overall-status" class="sim-details">
-                <p><strong>Operational State:</strong> <span id="operational-state">N/A</span></p>
-                <p><strong>Power Output:</strong> <span id="power-output">N/A</span> MW</p>
-                <p><strong>Core Temperature:</strong> <span id="core-temperature">N/A</span> °C</p>
-                <p><strong>Coolant Pressure:</strong> <span id="coolant-pressure">N/A</span> MPa</p>
-            </div>
+        <div class="sim-details">
+            <p><strong>State:</strong> <span id="operational-state"></span></p>
         </div>
-
-        <div id="status-display">
-            <div class="component-status">
-                <h4>Component Status</h4>
-                <div id="component-details" class="sim-card">
-                    <div class="sim-details">
-                        <p><strong>Reactor:</strong> <span id="reactor-status">N/A</span></p>
-                        <p><strong>Turbine:</strong> <span id="turbine-status">N/A</span></p>
-                        <p><strong>Generator:</strong> <span id="generator-status">N/A</span></p>
-                        <p><strong>Condenser:</strong> <span id="condenser-status">N/A</span></p>
-                        <p><strong>Cooling Tower:</strong> <span id="cooling-tower-status">N/A</span></p>
-                    </div>
-                </div>
+        <div class="component-status">
+            <h3>Component Status</h3>
+            <div id="component-cards" class="simulations-grid">
+                <!-- Component cards will be dynamically inserted here -->
             </div>
         </div>
     </div>
@@ -65,17 +52,34 @@
         document.getElementById('active-sim-id').textContent = simInfo.id;
         document.getElementById('active-sim-name').textContent = simInfo.name;
         document.getElementById('active-sim-motto').textContent = simInfo.motto;
-        document.getElementById('active-sim-spawned-at').textContent = new Date(simInfo.spawned_at).toLocaleString();
-        activeSimId = simInfo.id;
+        document.getElementById('active-sim-spawned-at').textContent = formatDateTime(new Date(simInfo.spawned_at));
     }
 
     function updateStatus(status) {
-        const formattedTime = formatDateTime(new Date(status.simTime));
-        document.getElementById('current-time').textContent = formattedTime;
+        document.getElementById('current-time').textContent = formatDateTime(new Date(status.simTime));
+        document.getElementById('current-weather').textContent = status.weather || 'N/A';
         document.getElementById('operational-state').textContent = status.running ? 'Running' : 'Stopped';
-        document.getElementById('power-output').textContent = status.powerOutput || 'N/A';
-        document.getElementById('core-temperature').textContent = status.coreTemperature || 'N/A';
-        document.getElementById('coolant-pressure').textContent = status.coolantPressure || 'N/A';
+    }
+
+    function updateComponentCards(components) {
+        const componentCardsContainer = document.getElementById('component-cards');
+        componentCardsContainer.innerHTML = ''; // Clear existing cards
+
+        components.forEach(component => {
+            console.log(component);
+            const card = document.createElement('div');
+            card.className = 'component-card';
+            const componentProperties = Object.entries(component).filter(([key]) => key !== 'name' && key !== 'type');
+            let propertiesHTML = '';
+            componentProperties.forEach(([key, value]) => {
+                if (key === 'lastUpdated') {
+                    value = formatDateTime(new Date(value));
+                }
+                propertiesHTML += `<p>${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}</p>`;
+            });
+            card.innerHTML = `<h4>${component.name}</h4>${propertiesHTML}`;
+            componentCardsContainer.appendChild(card);
+        });
     }
 
     document.getElementById('advance-sim').addEventListener('click', () => {
@@ -115,11 +119,15 @@
         fetch(`/api/sims/${simId}`)
             .then(response => response.json())
             .then(simInfo => {
+                activeSimId = simInfo.id;
                 updateSimInfo(simInfo);
                 return fetch(`/api/sims/${simId}/status`);
             })
             .then(response => response.json())
-            .then(status => updateStatus(status))
+            .then(status => {
+                updateStatus(status);
+                updateComponentCards(status.components);
+            })
             .catch(error => console.error('Error:', error));
     } else {
         console.error('No simulation ID provided in URL');

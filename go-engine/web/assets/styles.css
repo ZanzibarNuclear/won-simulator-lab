@@ -234,3 +234,14 @@ footer {
 .button-group button[type="button"]:hover {
   background-color: #5a6268;
 }
+
+.component-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.component-card h4 {
+  margin-top: 0;
+}
