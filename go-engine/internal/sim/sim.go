@@ -24,8 +24,8 @@ type Simulation struct {
 	clock       Clock
 	environment Environment
 	running     bool
-
-	stopChan chan struct{}
+	verbose     bool
+	stopChan    chan struct{}
 }
 
 func NewSimulation(name string, motto string) *Simulation {
@@ -69,6 +69,10 @@ func (s *Simulation) Info() SimInfo {
 
 func (s *Simulation) Components() []Component {
 	return s.components
+}
+
+func (s *Simulation) SetVerboseLogging(verbose bool) {
+	s.verbose = verbose
 }
 
 func (s *Simulation) FindPrimaryLoop() *PrimaryLoop {
@@ -192,15 +196,21 @@ func (s *Simulation) Run(ticks int) {
 
 	defer func() {
 		s.running = false
-		fmt.Println("Whew. That was a nice run.")
-		s.PrintStatus()
+		if s.verbose {
+			fmt.Println("Whew. That was a nice run.")
+			s.PrintStatus()
+		}
 	}()
 
-	fmt.Printf("Starting %d iterations\n", ticks)
+	if s.verbose {
+		fmt.Printf("Starting %d iterations\n", ticks)
+	}
 	for cnt = 0; cnt < ticks; cnt++ {
 		select {
 		case <-s.stopChan:
-			fmt.Printf("Interrupted after %d iterations\n", cnt)
+			if s.verbose {
+				fmt.Printf("Interrupted after %d iterations\n", cnt)
+			}
 			return
 		default:
 			s.clock.Tick()

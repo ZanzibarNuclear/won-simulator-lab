@@ -98,21 +98,17 @@ func TestSimulationAdvanceAndStop(t *testing.T) {
 	}
 	// Advance the simulation 1000000 steps
 	sim.Advance(1000000)
-
-	// Wait a short time to ensure the simulation has started
 	time.Sleep(2 * time.Millisecond)
-
-	// Call Stop
 	sim.Stop()
 
-	// Wait for the simulation to fully stop
-	for sim.IsRunning() {
-		time.Sleep(10 * time.Millisecond)
+	time.Sleep(2 * time.Millisecond)
+	if sim.IsRunning() {
+		t.Error("Simulation should not be running after stop")
 	}
 
 	// Check that the number of iterations is less than 1000000
 	if sim.clock.currentIter >= 1000000 {
-		t.Errorf("Expected iterations to be less than 1000000, got %d", sim.clock.currentIter)
+		t.Errorf("Expected interruption before completion, got through all %d ticks", sim.clock.currentIter)
 	}
 
 	// Additional checks to ensure the simulation ran and stopped correctly
@@ -120,7 +116,4 @@ func TestSimulationAdvanceAndStop(t *testing.T) {
 		t.Error("Simulation did not advance at all")
 	}
 
-	if sim.IsRunning() {
-		t.Error("Simulation should not be running after stop")
-	}
 }
