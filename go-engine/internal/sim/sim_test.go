@@ -66,6 +66,10 @@ func TestSimulationAdvanceAndStop(t *testing.T) {
 	sim.AddComponent(NewCondenser("Condie the Condenser"))
 	sim.AddComponent(NewGenerator("Flo the Power Generator"))
 
+	// turn things on so that update loop is meaningful
+	sim.FindPrimaryLoop().SwitchOnPump()
+	// TODO: turn on more as component models improve
+
 	// Verify that components were added
 	expectedComponents := 8
 	if len(sim.components) != expectedComponents {
@@ -115,5 +119,4 @@ func TestSimulationAdvanceAndStop(t *testing.T) {
 	if sim.clock.currentIter == 0 {
 		t.Error("Simulation did not advance at all")
 	}
-
 }

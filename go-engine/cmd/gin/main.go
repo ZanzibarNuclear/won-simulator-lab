@@ -83,16 +83,16 @@ func main() {
 }
 
 func spawnSimulation(name, motto string) *sim.Simulation {
-	simulation := sim.NewSimulation(name, motto)
-	simulation.AddComponent(sim.NewPrimaryLoop("Primary Loop"))
-	simulation.AddComponent(sim.NewSecondaryLoop("Secondary Loop"))
-	simulation.AddComponent(sim.NewReactorCore("Reactor Core"))
-	simulation.AddComponent(sim.NewPressurizer("Pressurizer"))
-	simulation.AddComponent(sim.NewSteamGenerator("Steam Generator"))
-	simulation.AddComponent(sim.NewSteamTurbine("Steam Turbine"))
-	simulation.AddComponent(sim.NewCondenser("Condenser"))
-	simulation.AddComponent(sim.NewGenerator("Power Generator"))
-	return simulation
+	simConfigurator := sim.NewSimulationConfigurator(name, motto)
+	simConfigurator.AddPrimaryLoop("Primary Loop")
+	simConfigurator.AddSecondaryLoop("Secondary Loop")
+	simConfigurator.AddReactorCore("Reactor Core")
+	simConfigurator.AddPressurizer("Pressurizer")
+	simConfigurator.AddSteamGenerator("Steam Generator")
+	simConfigurator.AddSteamTurbine("Steam Turbine")
+	simConfigurator.AddCondenser("Condenser")
+	simConfigurator.AddGenerator("Power Generator")
+	return simConfigurator.Build()
 }
 
 func advanceSim(c *gin.Context) {
