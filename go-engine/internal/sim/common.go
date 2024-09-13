@@ -7,12 +7,14 @@ import (
 type Environment struct {
 	Weather            string
 	AmbientTemperature float64
+	PowerOn            bool
 }
 
 func NewEnvironment() *Environment {
 	return &Environment{
 		Weather:            "sunny",
 		AmbientTemperature: ROOM_TEMPERATURE,
+		PowerOn:            true,
 	}
 }
 

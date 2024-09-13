@@ -7,23 +7,23 @@ import (
 
 type SteamGenerator struct {
 	BaseComponent
-	primaryInletTemp  float64 // Temperature of water coming from reactor core (°C)
-	primaryOutletTemp float64 // Temperature of water returning to reactor core (°C)
-	secondaryInletTemp float64 // Temperature of water from secondary loop (°C)
+	primaryInletTemp    float64 // Temperature of water coming from reactor core (°C)
+	primaryOutletTemp   float64 // Temperature of water returning to reactor core (°C)
+	secondaryInletTemp  float64 // Temperature of water from secondary loop (°C)
 	secondaryOutletTemp float64 // Temperature of steam to secondary loop (°C)
-	heatTransferRate float64 // Rate of heat transfer from primary to secondary loop (MW)
-	steamFlowRate    float64 // Rate of steam production (kg/s)
+	heatTransferRate    float64 // Rate of heat transfer from primary to secondary loop (MW)
+	steamFlowRate       float64 // Rate of steam production (kg/s)
 }
 
 func NewSteamGenerator(name string) *SteamGenerator {
 	return &SteamGenerator{
-		BaseComponent:      BaseComponent{Name: name},
-		primaryInletTemp:   320.0, // Initial values, can be adjusted as needed
-		primaryOutletTemp:  280.0,
-		secondaryInletTemp: 220.0,
+		BaseComponent:       BaseComponent{Name: name},
+		primaryInletTemp:    320.0, // Initial values, can be adjusted as needed
+		primaryOutletTemp:   280.0,
+		secondaryInletTemp:  220.0,
 		secondaryOutletTemp: 280.0,
-		heatTransferRate:   1000.0, // 1000 MW, for example
-		steamFlowRate:      500.0,  // 500 kg/s, for example
+		heatTransferRate:    1000.0, // 1000 MW, for example
+		steamFlowRate:       500.0,  // 500 kg/s, for example
 	}
 }
 
@@ -52,18 +52,18 @@ func (sg *SteamGenerator) Update(env *Environment, s *Simulation) {
 	sg.steamFlowRate = sg.heatTransferRate * 0.5 // Arbitrary factor
 
 	// Update secondary loop water flow rate
-	secondaryLoop.waterFlowRate = sg.steamFlowRate / 1000 // Convert kg/s to m³/s (assuming water density of 1000 kg/m³)
+	secondaryLoop.feedwaterFlowRate = sg.steamFlowRate / 1000 // Convert kg/s to m³/s (assuming water density of 1000 kg/m³)
 }
 
 func (sg *SteamGenerator) Status() map[string]interface{} {
 	return map[string]interface{}{
-		"name":                 sg.Name,
-		"primaryInletTemp":     sg.primaryInletTemp,
-		"primaryOutletTemp":    sg.primaryOutletTemp,
-		"secondaryInletTemp":   sg.secondaryInletTemp,
-		"secondaryOutletTemp":  sg.secondaryOutletTemp,
-		"heatTransferRate":     sg.heatTransferRate,
-		"steamFlowRate":        sg.steamFlowRate,
+		"name":                sg.Name,
+		"primaryInletTemp":    sg.primaryInletTemp,
+		"primaryOutletTemp":   sg.primaryOutletTemp,
+		"secondaryInletTemp":  sg.secondaryInletTemp,
+		"secondaryOutletTemp": sg.secondaryOutletTemp,
+		"heatTransferRate":    sg.heatTransferRate,
+		"steamFlowRate":       sg.steamFlowRate,
 	}
 }
 
@@ -76,4 +76,3 @@ func (sg *SteamGenerator) PrintStatus() {
 	fmt.Printf("\tHeat Transfer Rate: %.2f MW\n", sg.heatTransferRate)
 	fmt.Printf("\tSteam Flow Rate: %.2f kg/s\n", sg.steamFlowRate)
 }
-

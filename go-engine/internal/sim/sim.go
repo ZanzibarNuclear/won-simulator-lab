@@ -24,8 +24,8 @@ type Simulation struct {
 	clock       Clock
 	environment Environment
 	running     bool
-
-	stopChan chan struct{}
+	verbose     bool
+	stopChan    chan struct{}
 }
 
 func NewSimulation(name string, motto string) *Simulation {
@@ -42,6 +42,7 @@ func NewSimulation(name string, motto string) *Simulation {
 		},
 		environment: Environment{
 			Weather: "Sunny", // Initialize with a default weather
+			PowerOn: true,
 		},
 		components: make([]Component, 0),
 		stopChan:   make(chan struct{}),
@@ -69,6 +70,10 @@ func (s *Simulation) Info() SimInfo {
 
 func (s *Simulation) Components() []Component {
 	return s.components
+}
+
+func (s *Simulation) SetVerboseLogging(verbose bool) {
+	s.verbose = verbose
 }
 
 func (s *Simulation) FindPrimaryLoop() *PrimaryLoop {
@@ -150,14 +155,16 @@ func (s *Simulation) updateEnvironment() {
 
 func (s *Simulation) Status() map[string]interface{} {
 	status := map[string]interface{}{
-		"id":         s.info.ID,
-		"name":       s.info.Name,
-		"motto":      s.info.Motto,
-		"spawned_at": s.info.SpawnedAt,
-		"running":    s.running,
-		"simTime":    s.clock.SimTime(),
-		"weather":    s.environment.Weather,
-		"components": make([]map[string]interface{}, 0),
+		"id":              s.info.ID,
+		"name":            s.info.Name,
+		"motto":           s.info.Motto,
+		"spawned_at":      s.info.SpawnedAt,
+		"simTime":         s.clock.SimTime(),
+		"iterationNumber": s.clock.currentIter,
+		"running":         s.running,
+		"powerOn":         s.environment.PowerOn,
+		"weather":         s.environment.Weather,
+		"components":      make([]map[string]interface{}, 0),
 	}
 	for _, component := range s.components {
 		componentStatus := component.Status()
@@ -174,6 +181,7 @@ func (s *Simulation) PrintStatus() {
 	fmt.Printf("Sim Time: %s\n", s.clock.SimTime())
 	fmt.Printf("Started at: %s\n", s.clock.startedAt)
 	fmt.Printf("Is running: %t\n", s.running)
+	fmt.Printf("Power On: %t\n", s.environment.PowerOn)
 	fmt.Printf("Last iteration %d\n", s.clock.currentIter)
 	fmt.Printf("Weather: %s\n\n", s.environment.Weather)
 	for _, component := range s.components {
@@ -192,15 +200,21 @@ func (s *Simulation) Run(ticks int) {
 
 	defer func() {
 		s.running = false
-		fmt.Println("Whew. That was a nice run.")
-		s.PrintStatus()
+		if s.verbose {
+			fmt.Println("Whew. That was a nice run.")
+			s.PrintStatus()
+		}
 	}()
 
-	fmt.Printf("Starting %d iterations\n", ticks)
+	if s.verbose {
+		fmt.Printf("Starting %d iterations\n", ticks)
+	}
 	for cnt = 0; cnt < ticks; cnt++ {
 		select {
 		case <-s.stopChan:
-			fmt.Printf("Interrupted after %d iterations\n", cnt)
+			if s.verbose {
+				fmt.Printf("Interrupted after %d iterations\n", cnt)
+			}
 			return
 		default:
 			s.clock.Tick()
