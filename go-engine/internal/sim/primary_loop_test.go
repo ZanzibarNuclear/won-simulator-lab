@@ -1,4 +1,4 @@
-package sim_test
+package sim_test // turns out this is a good practice for testing APIs
 
 import (
 	"testing"

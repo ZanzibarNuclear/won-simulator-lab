@@ -52,7 +52,7 @@ func (sg *SteamGenerator) Update(env *Environment, s *Simulation) {
 	sg.steamFlowRate = sg.heatTransferRate * 0.5 // Arbitrary factor
 
 	// Update secondary loop water flow rate
-	secondaryLoop.flowRate = sg.steamFlowRate / 1000 // Convert kg/s to m³/s (assuming water density of 1000 kg/m³)
+	secondaryLoop.feedwaterFlowRate = sg.steamFlowRate / 1000 // Convert kg/s to m³/s (assuming water density of 1000 kg/m³)
 }
 
 func (sg *SteamGenerator) Status() map[string]interface{} {

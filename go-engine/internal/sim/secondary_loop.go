@@ -2,26 +2,36 @@ package sim
 
 import (
 	"fmt"
+	"math"
 )
+
+const MSSV_PRESSURE_THRESHOLD = 8.0          // in MPa; main steam safety value
+const TARGET_STEAM_TEMPERATURE = 285.0       // in Celsius
+const TARGET_FEEDWATER_TEMPERATURE = 80.0    // in Celsius
+const FEEDWATER_TEMPERATURE_INCREMENT = 10.0 // in Celsius
+const BASE_FEEDWATER_TEMPERATURE = 40.0      // in Celsius
 
 type SecondaryLoop struct {
 	BaseComponent
-	steamTemperature     float64 // in Celsius
-	steamPressure        float64 // in MPa
-	steamSafetyValveOpen bool
-	feedwaterTemperature float64 // in Celsius
-	feedwaterPumpOn      bool
-	feedwaterFlowRate    float64 // in m³/s
-	feedwaterHeatersOn   bool
+	steamTemperature               float64 // in Celsius
+	steamPressure                  float64 // in MPa
+	mainSteamSafetyValveOpened     bool
+	openPowerOperatedReliefValve   bool
+	powerOperatedReliefValveOpened bool
+	targetSteamPressure            float64 // in MPa
+	feedwaterPumpOn                bool
+	feedwaterFlowRate              float64 // in m³/s
+	feedheatersOn                  bool
+	feedwaterTemperature           float64 // in Celsius; temperature of the feedwater as it enters the steam generator; related to efficiency of the steam generator
 }
 
 func NewSecondaryLoop(name string) *SecondaryLoop {
 	return &SecondaryLoop{
 		BaseComponent:        BaseComponent{Name: name},
-		steamTemperature:     100.0, // Initial value, can be adjusted as needed
-		steamPressure:        1.0,   // Initial value, can be adjusted as needed
-		feedwaterTemperature: 80.0,  // Initial value, can be adjusted as needed
-		feedwaterFlowRate:    2.0,   // 2 m³/s, 120 per minute
+		steamTemperature:     100.0,
+		steamPressure:        1.0,
+		feedwaterFlowRate:    2.0, // 2 m³/s, 120 per minute
+		feedwaterTemperature: BASE_FEEDWATER_TEMPERATURE,
 	}
 }
 
@@ -36,26 +46,72 @@ func NewSecondaryLoop(name string) *SecondaryLoop {
 // Most of the circulation is driven by natural convection.
 
 func (sl *SecondaryLoop) Update(env *Environment, s *Simulation) {
-	// TODO: react to Steam Generator
-	// TODO: react to changes in feedwater flow rate
-	// TODO: detect pressure relief events: pressure and temperature should drop,
-	//   and make a note of the event
+	// TODO: react to Steam Generator; determine steam temperature and pressure
+	// steam moves at 60 mph during operation
+	if sl.steamTemperature < TARGET_STEAM_TEMPERATURE {
+		sl.steamTemperature += 10.0 // temperature increases some amount TODO: base this on Steam Generator
+		sl.steamPressure += 1.0     // pressure increases accordingly TODO: base this on steam temperature
+	}
+
+	// vent steam when pressure is too high
+	if sl.steamPressure > MSSV_PRESSURE_THRESHOLD {
+		sl.mainSteamSafetyValveOpened = true
+		sl.steamPressure -= MSSV_PRESSURE_THRESHOLD - 1.5 // TODO: research how much pressure would drop
+		sl.steamTemperature -= 30.0                       // temperature drops some amount TODO: research how much per event
+	} else {
+		sl.mainSteamSafetyValveOpened = false
+	}
+
+	if env.PowerOn {
+		// TODO: figure out less awkward way to adjust sub-components
+		if sl.openPowerOperatedReliefValve {
+			sl.steamPressure = sl.targetSteamPressure
+			sl.powerOperatedReliefValveOpened = true
+			sl.openPowerOperatedReliefValve = false
+		} else {
+			sl.powerOperatedReliefValveOpened = false
+		}
+
+		// adjust feedwater temperature as needed
+		if sl.feedheatersOn && sl.feedwaterTemperature < TARGET_FEEDWATER_TEMPERATURE {
+			// increase temperature by 10 degree per minute until target is reached
+			sl.feedwaterTemperature += math.Min(TARGET_FEEDWATER_TEMPERATURE-sl.feedwaterTemperature, FEEDWATER_TEMPERATURE_INCREMENT)
+		} else if !sl.feedheatersOn && sl.feedwaterTemperature > BASE_FEEDWATER_TEMPERATURE {
+			// decrease temperature by 10 degree per minute until base is reached
+			sl.feedwaterTemperature -= math.Min(sl.feedwaterTemperature-BASE_FEEDWATER_TEMPERATURE, FEEDWATER_TEMPERATURE_INCREMENT)
+		}
+	} else {
+		sl.SwitchOffFeedwaterPump()
+		sl.SwitchOffFeedheaters()
+	}
 }
 
 func (sl *SecondaryLoop) FeedwaterVolume() float64 {
-	return sl.feedwaterFlowRate * 60
+	if sl.feedwaterPumpOn {
+		return sl.feedwaterFlowRate * 60
+	}
+	return 0.0
+}
+
+func (sl *SecondaryLoop) TargetFeedwaterTemperature() float64 {
+	return TARGET_FEEDWATER_TEMPERATURE
+}
+
+func (sl *SecondaryLoop) OpenPowerOperatedReliefValue(targetPressure float64) {
+	sl.openPowerOperatedReliefValve = true
+	sl.targetSteamPressure = targetPressure
 }
 
 func (sl *SecondaryLoop) Status() map[string]interface{} {
 	return map[string]interface{}{
-		"name":                 sl.Name,
-		"steamTemperature":     sl.steamTemperature,
-		"steamPressure":        sl.steamPressure,
-		"steamSafetyValveOpen": sl.steamSafetyValveOpen,
-		"feedwaterTemperature": sl.feedwaterTemperature,
-		"feedwaterPumpOn":      sl.feedwaterPumpOn,
-		"feedwaterVolume":      sl.FeedwaterVolume(),
-		"feedwaterHeatersOn":   sl.feedwaterHeatersOn,
+		"name":                       sl.Name,
+		"steamTemperature":           sl.steamTemperature,
+		"steamPressure":              sl.steamPressure,
+		"mainSteamSafetyValveOpened": sl.mainSteamSafetyValveOpened,
+		"feedwaterTemperature":       sl.feedwaterTemperature,
+		"feedwaterPumpOn":            sl.feedwaterPumpOn,
+		"feedwaterVolume":            sl.FeedwaterVolume(),
+		"feedwaterHeatersOn":         sl.feedheatersOn,
 	}
 }
 
@@ -63,11 +119,11 @@ func (sl *SecondaryLoop) PrintStatus() {
 	fmt.Printf("Secondary Loop: %s\n", sl.Name)
 	fmt.Printf("\tSteam Temperature: %.2f °C\n", sl.steamTemperature)
 	fmt.Printf("\tSteam Pressure: %.2f MPa\n", sl.steamPressure)
-	fmt.Printf("\tSteam Safety Valve: %s\n", boolToString(sl.steamSafetyValveOpen))
+	fmt.Printf("\tMain Steam Safety Valve Released: %t\n", sl.mainSteamSafetyValveOpened)
 	fmt.Printf("\tFeedwater Temperature: %.2f °C\n", sl.feedwaterTemperature)
 	fmt.Printf("\tFeedwater Pump: %s\n", boolToString(sl.feedwaterPumpOn))
-	fmt.Printf("\tFeedwater Flow Rate: %.2f m³/min\n", sl.FeedwaterVolume())
-	fmt.Printf("\tFeedwater Heaters: %s\n", boolToString(sl.feedwaterHeatersOn))
+	fmt.Printf("\tFeedwater Volume: %.2f m³/min\n", sl.FeedwaterVolume())
+	fmt.Printf("\tFeedwater Heaters: %s\n", boolToString(sl.feedheatersOn))
 }
 
 func boolToString(b bool) string {
@@ -75,6 +131,10 @@ func boolToString(b bool) string {
 		return "On"
 	}
 	return "Off"
+}
+
+func (sl *SecondaryLoop) EmergencyMSSVReleased() bool {
+	return sl.mainSteamSafetyValveOpened
 }
 
 func (sl *SecondaryLoop) SwitchOnFeedwaterPump() {
@@ -100,8 +160,8 @@ func (sl *SecondaryLoop) AdjustFeedwaterFlowRate(rate float64) {
 	}
 }
 
-func (sl *SecondaryLoop) SwitchOnFeedwaterHeaters() {
-	sl.feedwaterHeatersOn = true
+func (sl *SecondaryLoop) SwitchOnFeedheaters() {
+	sl.feedheatersOn = true
 	// Optionally, we could add some logic here to gradually increase the temperature
 	// of the feedwater over time, simulating the heating process.
 	// For example:
@@ -109,8 +169,8 @@ func (sl *SecondaryLoop) SwitchOnFeedwaterHeaters() {
 	// This would depend on how often this method is called and how we want to model the heating process.
 }
 
-func (sl *SecondaryLoop) SwitchOffFeedwaterHeaters() {
-	sl.feedwaterHeatersOn = false
+func (sl *SecondaryLoop) SwitchOffFeedheaters() {
+	sl.feedheatersOn = false
 	// Similarly, we could add logic here to gradually decrease the temperature
 	// of the feedwater over time, simulating the cooling process when heaters are off.
 }
