@@ -78,21 +78,47 @@ func main() {
 	router.GET("/api/sims/:id/components/:name", getComponentStatus)
 	router.PUT("/api/sims/:id/advance", advanceSim)
 	router.PUT("/api/sims/:id/interrupt", interruptSim)
+	router.PUT("/api/sims/:id/primary-pump/on", turnOnPrimaryPump)
+	router.PUT("/api/sims/:id/primary-pump/off", turnOffPrimaryPump)
+	router.PUT("/api/sims/:id/feedwater-pump/on", turnOnFeedwaterPump)
+	router.PUT("/api/sims/:id/feedwater-pump/off", turnOffFeedwaterPump)
+	router.PUT("/api/sims/:id/feedheaters/on", turnOnFeedheaters)
+	router.PUT("/api/sims/:id/feedheaters/off", turnOffFeedheaters)
 
 	router.Run(":8080")
 }
 
 func spawnSimulation(name, motto string) *sim.Simulation {
-	simConfigurator := sim.NewSimulationConfigurator(name, motto)
-	simConfigurator.AddPrimaryLoop("Primary Loop")
-	simConfigurator.AddSecondaryLoop("Secondary Loop")
-	simConfigurator.AddReactorCore("Reactor Core")
-	simConfigurator.AddPressurizer("Pressurizer")
-	simConfigurator.AddSteamGenerator("Steam Generator")
-	simConfigurator.AddSteamTurbine("Steam Turbine")
-	simConfigurator.AddCondenser("Condenser")
-	simConfigurator.AddGenerator("Power Generator")
-	return simConfigurator.Build()
+	simmy := sim.NewSimulation(name, motto)
+
+	primaryLoop := sim.NewPrimaryLoop("Primary Loop")
+	// primaryLoop.SwitchOnPump()
+	simmy.AddComponent(primaryLoop)
+
+	secondaryLoop := sim.NewSecondaryLoop("Secondary Loop")
+	// secondaryLoop.SwitchOnFeedwaterPump()
+	// secondaryLoop.SwitchOnFeedheaters()
+	simmy.AddComponent(secondaryLoop)
+
+	reactorCore := sim.NewReactorCore("Reactor Core")
+	simmy.AddComponent(reactorCore)
+
+	pressurizer := sim.NewPressurizer("Pressurizer")
+	simmy.AddComponent(pressurizer)
+
+	steamGenerator := sim.NewSteamGenerator("Steam Generator")
+	simmy.AddComponent(steamGenerator)
+
+	steamTurbine := sim.NewSteamTurbine("Steam Turbine")
+	simmy.AddComponent(steamTurbine)
+
+	condenser := sim.NewCondenser("Condenser")
+	simmy.AddComponent(condenser)
+
+	generator := sim.NewGenerator("Generator")
+	simmy.AddComponent(generator)
+
+	return simmy
 }
 
 func advanceSim(c *gin.Context) {
@@ -235,4 +261,76 @@ func getComponentStatus(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Component not found"})
 	}
+}
+
+func turnOnPrimaryPump(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	simulation.FindPrimaryLoop().SwitchOnPump()
+	c.JSON(http.StatusOK, simulation.Status())
+}
+
+func turnOffPrimaryPump(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+	simulation.FindPrimaryLoop().SwitchOffPump()
+	c.JSON(http.StatusOK, simulation.Status())
+
+}
+
+func turnOnFeedwaterPump(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	simulation.FindSecondaryLoop().SwitchOnFeedwaterPump()
+	c.JSON(http.StatusOK, simulation.Status())
+}
+
+func turnOffFeedwaterPump(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+	simulation.FindSecondaryLoop().SwitchOffFeedwaterPump()
+	c.JSON(http.StatusOK, simulation.Status())
+
+}
+
+func turnOnFeedheaters(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	simulation.FindSecondaryLoop().SwitchOnFeedheaters()
+	c.JSON(http.StatusOK, simulation.Status())
+}
+
+func turnOffFeedheaters(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+	simulation.FindSecondaryLoop().SwitchOffFeedheaters()
+	c.JSON(http.StatusOK, simulation.Status())
+
 }

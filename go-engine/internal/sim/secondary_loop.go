@@ -56,8 +56,8 @@ func (sl *SecondaryLoop) Update(env *Environment, s *Simulation) {
 	// vent steam when pressure is too high
 	if sl.steamPressure > MSSV_PRESSURE_THRESHOLD {
 		sl.mainSteamSafetyValveOpened = true
-		sl.steamPressure -= MSSV_PRESSURE_THRESHOLD - 1.5 // TODO: research how much pressure would drop
-		sl.steamTemperature -= 30.0                       // temperature drops some amount TODO: research how much per event
+		sl.steamPressure = MSSV_PRESSURE_THRESHOLD - 1.5 // TODO: research how much pressure would drop
+		sl.steamTemperature -= 30.0                      // temperature drops some amount TODO: research how much per event
 	} else {
 		sl.mainSteamSafetyValveOpened = false
 	}
