@@ -1,201 +1,228 @@
 {{define "operator"}}
 <div class="operator-container">
-    <div class="sim-card">
-        <h2><span id="active-sim-name"></span></h2>
-        <div class="sim-details">
-            <p><strong>ID:</strong> <span id="active-sim-id"></span></p>
-            <p><strong>Motto:</strong> <span id="active-sim-motto"></span></p>
-            <p><strong>Simulation Time:</strong> <span id="current-time"></span></p>
-            <p><strong>Iteration Number:</strong> <span id="current-iteration"></span></p>
-            <p><strong>Power On:</strong> <span id="current-power-on"></span></p>
-            <p><strong>Weather:</strong> <span id="current-weather"></span></p>
-        </div>
-    </div>
-
-    <div class="sim-controls">
-        <h3>Simulator Controls</h3>
-        <div class="advance-control">
-            <select id="advance-steps">
-                <option value="1" selected>1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-            </select>
-            <select id="advance-unit">
-                <option value="minutes" selected>Minutes</option>
-                <option value="hours">Hours</option>
-                <option value="days">Days</option>
-            </select>
-            <button id="advance-sim">Advance Simulation</button>
-            <button id="refresh-status">Refresh Status</button>
-        </div>
-        <div class="component-controls">
-            <h3>Component Controls</h3>
-            <div class="control-group">
-                <label for="primary-pump-toggle">Primary Loop Pump:</label>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="primary-pump-toggle" class="toggle-input">
-                    <label for="primary-pump-toggle" class="toggle-label"></label>
-                </div>
-            </div>
-            <div class="control-group">
-                <label for="feedwater-pump-toggle">Feedwater Pump:</label>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="feedwater-pump-toggle" class="toggle-input">
-                    <label for="feedwater-pump-toggle" class="toggle-label"></label>
-                </div>
-            </div>
-            <div class="control-group">
-                <label for="feedheaters-toggle">Feedheaters:</label>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="feedheaters-toggle" class="toggle-input">
-                    <label for="feedheaters-toggle" class="toggle-label"></label>
+    <div class="info-controls-grid">
+        <div class="info-column">
+            <div class="sim-card">
+                <h2><span id="active-sim-name"></span></h2>
+                <div class="sim-details">
+                    <p><strong>ID:</strong> <span id="active-sim-id"></span></p>
+                    <p><strong>Motto:</strong> <span id="active-sim-motto"></span></p>
+                    <p><strong>Simulation Time:</strong> <span id="current-time"></span></p>
+                    <p><strong>Iteration Number:</strong> <span id="current-iteration"></span></p>
+                    <p><strong>Power On:</strong> <span id="current-power-on"></span></p>
+                    <p><strong>Weather:</strong> <span id="current-weather"></span></p>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="sim-status">
-        <h3>Operational Status</h3>
-        <div class="sim-details">
-            <p><strong>State:</strong> <span id="operational-state"></span></p>
+        <div class="controls-column">
+            <div class="sim-controls">
+                <h3>Simulator Controls</h3>
+                <div class="advance-control">
+                    <select id="advance-steps">
+                        <option value="1" selected>1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                    <select id="advance-unit">
+                        <option value="minutes" selected>Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                    </select>
+                    <button id="advance-sim">Advance Simulation</button>
+                    <button id="refresh-status">Refresh Status</button>
+                </div>
+                <div class="component-controls">
+                    <h3>Component Controls</h3>
+                    <div class="control-group">
+                        <label for="primary-pump-toggle">Primary Loop Pump:</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="primary-pump-toggle" class="toggle-input">
+                            <label for="primary-pump-toggle" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="feedwater-pump-toggle">Feedwater Pump:</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="feedwater-pump-toggle" class="toggle-input">
+                            <label for="feedwater-pump-toggle" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="feedheaters-toggle">Feedheaters:</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="feedheaters-toggle" class="toggle-input">
+                            <label for="feedheaters-toggle" class="toggle-label"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="component-status">
-            <h3>Component Status</h3>
-            <div id="component-cards" class="simulations-grid">
-                <!-- Component cards will be dynamically inserted here -->
+        <div class="full-width-column">
+            <h3>Operational Status</h3>
+            <div class="sim-details">
+                <p><strong>State:</strong> <span id="operational-state"></span></p>
+            </div>
+            <div class="component-status">
+                <h3>Components</h3>
+                <div id="component-cards" class="simulations-grid">
+                    <!-- Component cards will be dynamically inserted here -->
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    let activeSimId = null;
-
-    function updateSimInfo(simInfo) {
-        document.getElementById('active-sim-id').textContent = simInfo.id;
-        document.getElementById('active-sim-name').textContent = simInfo.name;
-        document.getElementById('active-sim-motto').textContent = simInfo.motto;
-    }
-
-    function updateStatus(status) {
-        console.log('status after tick', status);
-        document.getElementById('current-time').textContent = formatDateTime(new Date(status.simTime));
-        document.getElementById('current-iteration').textContent = status.iterationNumber;
-        document.getElementById('current-power-on').textContent = status.powerOn ? 'Yes' : 'No';
-        document.getElementById('current-weather').textContent = status.weather || 'N/A';
-        document.getElementById('operational-state').textContent = status.running ? 'Running' : 'Stopped';
-        updateComponentCards(status.components)
-    }
-
-    function updateComponentCards(components) {
-        const componentCardsContainer = document.getElementById('component-cards');
-        componentCardsContainer.innerHTML = ''; // Clear existing cards
-
-        components.forEach(component => {
-            console.log(component);
-            const card = document.createElement('div');
-            card.className = 'component-card';
-            const componentProperties = Object.entries(component).filter(([key]) => key !== 'name' && key !== 'type');
-            let propertiesHTML = '';
-            componentProperties.forEach(([key, value]) => {
-                if (key === 'lastUpdated') {
-                    value = formatDateTime(new Date(value));
-                }
-                propertiesHTML += `<p>${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}</p>`;
-            });
-            card.innerHTML = `<h4>${component.name}</h4>${propertiesHTML}`;
-            componentCardsContainer.appendChild(card);
-        });
-    }
-
-    function fetchSimStatus() {
-        if (!activeSimId) return;
-        fetch(`/api/sims/${activeSimId}/status`)
-            .then(response => response.json())
-            .then(status => updateStatus(status))
-            .catch(error => console.error('Error:', error));
-    }
-
-    document.getElementById('advance-sim').addEventListener('click', () => {
-        if (!activeSimId) return;
-        const steps = document.getElementById('advance-steps').value;
-        const unit = document.getElementById('advance-unit').value;
-        let totalSteps = parseInt(steps);
-
-        if (unit === 'hours') {
-            totalSteps *= 60;
-        } else if (unit === 'days') {
-            totalSteps *= 1440; // 24 hours * 60 minutes
+    <style>
+        .info-controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        fetch(`/api/sims/${activeSimId}/advance`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ steps: totalSteps })
-        })
-            .then(response => response.json())
-            .then(() => {
-                setTimeout(() => {
-                    fetchSimStatus();
-                }, 1000);
+        .info-column,
+        .controls-column {
+            min-width: 0;
+            /* Ensures content doesn't push out of the grid */
+        }
+
+        .full-width-column {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 768px) {
+            .info-controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        let activeSimId = null;
+
+        function updateSimInfo(simInfo) {
+            document.getElementById('active-sim-id').textContent = simInfo.id;
+            document.getElementById('active-sim-name').textContent = simInfo.name;
+            document.getElementById('active-sim-motto').textContent = simInfo.motto;
+        }
+
+        function updateStatus(status) {
+            console.log('status after tick', status);
+            document.getElementById('current-time').textContent = formatDateTime(new Date(status.simTime));
+            document.getElementById('current-iteration').textContent = status.iterationNumber;
+            document.getElementById('current-power-on').textContent = status.powerOn ? 'Yes' : 'No';
+            document.getElementById('current-weather').textContent = status.weather || 'N/A';
+            document.getElementById('operational-state').textContent = status.running ? 'Running' : 'Stopped';
+            updateComponentCards(status.components)
+        }
+
+        function updateComponentCards(components) {
+            const componentCardsContainer = document.getElementById('component-cards');
+            componentCardsContainer.innerHTML = ''; // Clear existing cards
+
+            components.forEach(component => {
+                console.log(component);
+                const card = document.createElement('div');
+                card.className = 'component-card';
+                const componentProperties = Object.entries(component).filter(([key]) => key !== 'name' && key !== 'type');
+                let propertiesHTML = '';
+                componentProperties.forEach(([key, value]) => {
+                    if (key === 'lastUpdated') {
+                        value = formatDateTime(new Date(value));
+                    }
+                    propertiesHTML += `<p>${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}</p>`;
+                });
+                card.innerHTML = `<h4>${component.name}</h4>${propertiesHTML}`;
+                componentCardsContainer.appendChild(card);
+            });
+        }
+
+        function fetchSimStatus() {
+            if (!activeSimId) return;
+            fetch(`/api/sims/${activeSimId}/status`)
+                .then(response => response.json())
+                .then(status => updateStatus(status))
+                .catch(error => console.error('Error:', error));
+        }
+
+        document.getElementById('advance-sim').addEventListener('click', () => {
+            if (!activeSimId) return;
+            const steps = document.getElementById('advance-steps').value;
+            const unit = document.getElementById('advance-unit').value;
+            let totalSteps = parseInt(steps);
+
+            if (unit === 'hours') {
+                totalSteps *= 60;
+            } else if (unit === 'days') {
+                totalSteps *= 1440; // 24 hours * 60 minutes
+            }
+
+            fetch(`/api/sims/${activeSimId}/advance`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ steps: totalSteps })
             })
-            .catch(error => console.error('Error:', error));
-    });
+                .then(response => response.json())
+                .then(() => {
+                    setTimeout(() => {
+                        fetchSimStatus();
+                    }, 1000);
+                })
+                .catch(error => console.error('Error:', error));
+        });
 
-    document.getElementById('refresh-status').addEventListener('click', () => {
-        fetchSimStatus();
-    });
+        document.getElementById('refresh-status').addEventListener('click', () => {
+            fetchSimStatus();
+        });
 
-    document.getElementById('primary-pump-toggle').addEventListener('change', () => {
-        if (!activeSimId) return;
-        const isChecked = document.getElementById('primary-pump-toggle').checked;
-        fetch(`/api/sims/${activeSimId}/primary-pump/${isChecked ? 'on' : 'off'}`, {
-            method: 'PUT'
-        })
-            .then(response => response.json())
-            .then(status => updateStatus(status))
-            .catch(error => console.error('Error:', error));
-    });
-
-    document.getElementById('feedwater-pump-toggle').addEventListener('change', () => {
-        if (!activeSimId) return;
-        const isChecked = document.getElementById('feedwater-pump-toggle').checked;
-        fetch(`/api/sims/${activeSimId}/feedwater-pump/${isChecked ? 'on' : 'off'}`, {
-            method: 'PUT'
-        })
-            .then(response => response.json())
-            .then(status => updateStatus(status))
-            .catch(error => console.error('Error:', error));
-    });
-
-    document.getElementById('feedheaters-toggle').addEventListener('change', () => {
-        if (!activeSimId) return;
-        const isChecked = document.getElementById('feedheaters-toggle').checked;
-        fetch(`/api/sims/${activeSimId}/feedheaters/${isChecked ? 'on' : 'off'}`, {
-            method: 'PUT'
-        })
-            .then(response => response.json())
-            .then(status => updateStatus(status))
-            .catch(error => console.error('Error:', error));
-    });
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const simId = urlParams.get('id');
-    if (simId) {
-        fetch(`/api/sims/${simId}`)
-            .then(response => response.json())
-            .then(simInfo => {
-                activeSimId = simInfo.id;
-                updateSimInfo(simInfo);
-                return fetch(`/api/sims/${simId}/status`);
+        document.getElementById('primary-pump-toggle').addEventListener('change', () => {
+            if (!activeSimId) return;
+            const isChecked = document.getElementById('primary-pump-toggle').checked;
+            fetch(`/api/sims/${activeSimId}/primary-pump/${isChecked ? 'on' : 'off'}`, {
+                method: 'PUT'
             })
-            .then(response => response.json())
-            .then(status => updateStatus(status))
-            .catch(error => console.error('Error:', error));
-    } else {
-        console.error('No simulation ID provided in URL');
-    }
-</script>
-{{end}}
+                .then(response => response.json())
+                .then(status => updateStatus(status))
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('feedwater-pump-toggle').addEventListener('change', () => {
+            if (!activeSimId) return;
+            const isChecked = document.getElementById('feedwater-pump-toggle').checked;
+            fetch(`/api/sims/${activeSimId}/feedwater-pump/${isChecked ? 'on' : 'off'}`, {
+                method: 'PUT'
+            })
+                .then(response => response.json())
+                .then(status => updateStatus(status))
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('feedheaters-toggle').addEventListener('change', () => {
+            if (!activeSimId) return;
+            const isChecked = document.getElementById('feedheaters-toggle').checked;
+            fetch(`/api/sims/${activeSimId}/feedheaters/${isChecked ? 'on' : 'off'}`, {
+                method: 'PUT'
+            })
+                .then(response => response.json())
+                .then(status => updateStatus(status))
+                .catch(error => console.error('Error:', error));
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const simId = urlParams.get('id');
+        if (simId) {
+            fetch(`/api/sims/${simId}`)
+                .then(response => response.json())
+                .then(simInfo => {
+                    activeSimId = simInfo.id;
+                    updateSimInfo(simInfo);
+                    return fetch(`/api/sims/${simId}/status`);
+                })
+                .then(response => response.json())
+                .then(status => updateStatus(status))
+                .catch(error => console.error('Error:', error));
+        } else {
+            console.error('No simulation ID provided in URL');
+        }
+    </script>
+    {{end}}
