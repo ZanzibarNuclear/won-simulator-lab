@@ -35,6 +35,11 @@ func TestPressurizer(t *testing.T) {
 	// Add more specific tests here based on the expected behavior of the Pressurizer
 }
 
+// Helper function to compare float values with a tolerance
+func almostEqual(a, b, tolerance float64) bool {
+	return math.Abs(a-b) <= tolerance
+}
+
 func TestPressurizerReachesTargetPT(t *testing.T) {
 	// Create a new simulation, environment, and pressurizer
 	sim := NewSimulation("TestPressurizer", "TestEnvironment")
@@ -48,9 +53,8 @@ func TestPressurizerReachesTargetPT(t *testing.T) {
 	pressurizer.heaterOn = true
 
 	// Update 100 times
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		pressurizer.Update(env, sim)
-		pressurizer.PrintStatus()
 	}
 
 	// Check that pressure is at target pressure
@@ -64,7 +68,60 @@ func TestPressurizerReachesTargetPT(t *testing.T) {
 	}
 }
 
-// Helper function to compare float values with a tolerance
-func almostEqual(a, b, tolerance float64) bool {
-	return math.Abs(a-b) <= tolerance
+func TestPressurizerReliefValve(t *testing.T) {
+	// Create a new simulation, environment, and pressurizer
+	sim := NewSimulation("TestPressurizer", "TestEnvironment")
+	env := NewEnvironment()
+	pressurizer := NewPressurizer("TestPressurizerReachesTargetPT")
+
+	// Add the pressurizer to the simulation
+	sim.AddComponent(pressurizer)
+
+	// Turn on the heater
+	pressurizer.heaterOn = true
+	pressurizer.SetTargetPressure(20.0)
+
+	// Update 100 times
+	for i := 0; i < 20; i++ {
+		pressurizer.Update(env, sim)
+		status := pressurizer.Status()
+		if triggered, ok := status["reliefValveOpened"].(bool); ok {
+			if triggered {
+				return
+			}
+		}
+	}
+
+	t.Errorf("Expected relief valve to be triggered")
+}
+
+func TestPressurizerSprayNozzel(t *testing.T) {
+	// Create a new simulation, environment, and pressurizer
+	sim := NewSimulation("TestPressurizer", "TestEnvironment")
+	env := NewEnvironment()
+	pressurizer := NewPressurizer("TestPressurizerReachesTargetPT")
+
+	// Add the pressurizer to the simulation
+	sim.AddComponent(pressurizer)
+
+	// Turn on the heater
+	pressurizer.heaterOn = true
+
+	// Run long enough to reach target pressure; heater should go to low power at that point
+	for i := 0; i < 20; i++ {
+		pressurizer.Update(env, sim)
+	}
+	topPressure := pressurizer.pressure
+
+	pressurizer.OpenSprayNozzle()
+	pressurizer.Update(env, sim)
+
+	if pressurizer.sprayFlowRate == 0.0 {
+		pressurizer.PrintStatus()
+		t.Errorf("Expected spray flow rate to be positive at %f, got %f", SPRAY_FLOW_RATE, pressurizer.sprayFlowRate)
+	}
+	if pressurizer.pressure >= topPressure {
+		pressurizer.PrintStatus()
+		t.Errorf("Expected pressure to dropped with spray nozzel open")
+	}
 }
