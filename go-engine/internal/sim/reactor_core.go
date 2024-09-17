@@ -8,9 +8,12 @@ import (
 type ReactorCore struct {
 	BaseComponent
 	controlRodInsertion float64 // 0 to 1, where 1 is fully inserted
-	reactivity          float64
-	temperature         float64
+	reactivity          float64 // 0 to 1, where 1 is critical
+	criticality         float64 // 0 to 1, where 1 is critical	
+	neutronFlux         float64 // in neutrons per second
+	temperature         float64 // in degrees Celsius
 	heatEnergyRate      float64 // in MW
+	primaryLoop         *PrimaryLoop
 }
 
 func NewReactorCore(name string) *ReactorCore {
@@ -18,17 +21,24 @@ func NewReactorCore(name string) *ReactorCore {
 		BaseComponent:       BaseComponent{Name: name},
 		controlRodInsertion: 1.0, // Start with control rods fully inserted
 		reactivity:          0.0,
+		criticality:         0.0,
+		neutronFlux:         0.0,
 		temperature:         20.0, // Start at room temperature (Celsius)
 		heatEnergyRate:      0.0,
 	}
 }
 
+func (rc *ReactorCore) ConnectToPrimaryLoop(primaryLoop *PrimaryLoop) {
+	rc.primaryLoop = primaryLoop
+}
+
 func (rc *ReactorCore) Update(env *Environment, s *Simulation) {
 	// Update reactivity based on control rod insertion
 	rc.reactivity = 1.0 - rc.controlRodInsertion
+	rc.criticality = 1.0 - rc.controlRodInsertion
 
 	// Update heat energy rate based on reactivity
-	rc.heatEnergyRate = 3000.0 * rc.reactivity // Assuming max output of 3000 MW
+	rc.heatEnergyRate = 3000.0 * rc.criticality // Assuming max output of 3000 MW
 
 	// Simple temperature model (this should be more complex in reality)
 	rc.temperature += (rc.heatEnergyRate / 1000.0) * 0.1          // Simplified heating
@@ -39,7 +49,7 @@ func (rc *ReactorCore) Status() map[string]interface{} {
 	return map[string]interface{}{
 		"name":                rc.Name,
 		"controlRodInsertion": rc.controlRodInsertion,
-		"reactivity":          rc.reactivity,
+		"criticality":         rc.criticality,
 		"temperature":         rc.temperature,
 		"heatEnergyRate":      rc.heatEnergyRate,
 	}
@@ -48,7 +58,7 @@ func (rc *ReactorCore) Status() map[string]interface{} {
 func (rc *ReactorCore) PrintStatus() {
 	fmt.Printf("Reactor Core: %s\n", rc.Name)
 	fmt.Printf("\tControl Rod Insertion: %.2f\n", rc.controlRodInsertion)
-	fmt.Printf("\tReactivity: %.2f\n", rc.reactivity)
+	fmt.Printf("\tCriticality: %.2f\n", rc.criticality)
 	fmt.Printf("\tTemperature: %.2f°C\n", rc.temperature)
 	fmt.Printf("\tHeat Energy Rate: %.2f MW\n", rc.heatEnergyRate)
 }
