@@ -40,7 +40,7 @@ func (sg *SteamGenerator) Update(env *Environment, s *Simulation) {
 	sg.primaryInletTemp = math.Min(reactorCore.temperature, 350) // Max temp 350°C
 
 	// Calculate heat transfer
-	sg.heatTransferRate = reactorCore.GetHeatEnergyRate() * 0.95 // Assume 95% efficiency
+	sg.heatTransferRate = reactorCore.HeatEnergyRate() * 0.95 // Assume 95% efficiency
 
 	// Update temperatures
 	tempDiff := sg.primaryInletTemp - sg.secondaryInletTemp

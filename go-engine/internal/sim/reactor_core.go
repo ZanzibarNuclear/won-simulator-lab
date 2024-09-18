@@ -7,24 +7,25 @@ import (
 
 type ReactorCore struct {
 	BaseComponent
-	controlRodInsertion float64 // 0 to 1, where 1 is fully inserted
-	reactivity          float64 // 0 to 1, where 1 is critical
-	criticality         float64 // 0 to 1, where 1 is critical	
-	neutronFlux         float64 // in neutrons per second
-	temperature         float64 // in degrees Celsius
-	heatEnergyRate      float64 // in MW
-	primaryLoop         *PrimaryLoop
+	reactivity            float64 // negative means subcritical, 0 means critical, positive means supercritical
+	neutronFlux           float64 // in neutrons per second
+	temperature           float64 // in degrees Celsius
+	heatEnergyRate        float64 // in MW
+	controlRods           *ControlRods
+	primaryLoop           *PrimaryLoop
+	withdrawShutdownBanks bool
+	bringToCritical       bool // withdraw control rods until supercritical, then insert just a bit to get to critical
+	scram                 bool
 }
 
 func NewReactorCore(name string) *ReactorCore {
 	return &ReactorCore{
-		BaseComponent:       BaseComponent{Name: name},
-		controlRodInsertion: 1.0, // Start with control rods fully inserted
-		reactivity:          0.0,
-		criticality:         0.0,
-		neutronFlux:         0.0,
-		temperature:         20.0, // Start at room temperature (Celsius)
-		heatEnergyRate:      0.0,
+		BaseComponent:  BaseComponent{Name: name},
+		reactivity:     0.0,
+		neutronFlux:    0.0,
+		temperature:    20.0, // Start at room temperature (Celsius)
+		heatEnergyRate: 0.0,
+		controlRods:    NewControlRods(),
 	}
 }
 
@@ -34,11 +35,10 @@ func (rc *ReactorCore) ConnectToPrimaryLoop(primaryLoop *PrimaryLoop) {
 
 func (rc *ReactorCore) Update(env *Environment, s *Simulation) {
 	// Update reactivity based on control rod insertion
-	rc.reactivity = 1.0 - rc.controlRodInsertion
-	rc.criticality = 1.0 - rc.controlRodInsertion
+	rc.reactivity = 1.0 - rc.controlRods.CalculateAverageInsertion()
 
 	// Update heat energy rate based on reactivity
-	rc.heatEnergyRate = 3000.0 * rc.criticality // Assuming max output of 3000 MW
+	rc.heatEnergyRate = 3000.0 * rc.reactivity // Assuming max output of 3000 MW
 
 	// Simple temperature model (this should be more complex in reality)
 	rc.temperature += (rc.heatEnergyRate / 1000.0) * 0.1          // Simplified heating
@@ -47,26 +47,40 @@ func (rc *ReactorCore) Update(env *Environment, s *Simulation) {
 
 func (rc *ReactorCore) Status() map[string]interface{} {
 	return map[string]interface{}{
-		"name":                rc.Name,
-		"controlRodInsertion": rc.controlRodInsertion,
-		"criticality":         rc.criticality,
-		"temperature":         rc.temperature,
-		"heatEnergyRate":      rc.heatEnergyRate,
+		"name":           rc.Name,
+		"reactivity":     rc.reactivity,
+		"neutronFlux":    rc.neutronFlux,
+		"temperature":    rc.temperature,
+		"heatEnergyRate": rc.heatEnergyRate,
+		"controlRods":    rc.controlRods,
 	}
 }
 
 func (rc *ReactorCore) PrintStatus() {
 	fmt.Printf("Reactor Core: %s\n", rc.Name)
-	fmt.Printf("\tControl Rod Insertion: %.2f\n", rc.controlRodInsertion)
-	fmt.Printf("\tCriticality: %.2f\n", rc.criticality)
+	fmt.Printf("\tReactivity: %.2f\n", rc.reactivity)
+	fmt.Printf("\tNeutron Flux: %.2f\n", rc.neutronFlux)
 	fmt.Printf("\tTemperature: %.2f°C\n", rc.temperature)
 	fmt.Printf("\tHeat Energy Rate: %.2f MW\n", rc.heatEnergyRate)
+	fmt.Printf("\tControl Rods: %v\n", rc.controlRods)
 }
 
-func (rc *ReactorCore) SetControlRodInsertion(insertion float64) {
-	rc.controlRodInsertion = math.Max(0, math.Min(insertion, 1))
-}
-
-func (rc *ReactorCore) GetHeatEnergyRate() float64 {
+func (rc *ReactorCore) HeatEnergyRate() float64 {
 	return rc.heatEnergyRate
+}
+
+func (rc *ReactorCore) WithdrawShutdownBanks() {
+	rc.withdrawShutdownBanks = true
+}
+
+func (rc *ReactorCore) BringToCritical() {
+	rc.bringToCritical = true
+}
+
+func (rc *ReactorCore) InsertShutdownBanks() {
+	rc.withdrawShutdownBanks = false
+}
+
+func (rc *ReactorCore) Scram() {
+	rc.scram = true
 }

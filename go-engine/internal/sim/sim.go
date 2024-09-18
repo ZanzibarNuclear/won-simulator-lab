@@ -1,7 +1,9 @@
 package sim
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -26,6 +28,7 @@ type Simulation struct {
 	running     bool
 	verbose     bool
 	stopChan    chan struct{}
+	history     []map[string]interface{} // New field to store history
 }
 
 func NewSimulation(name string, motto string) *Simulation {
@@ -222,6 +225,7 @@ func (s *Simulation) Run(ticks int) {
 			for _, component := range s.components {
 				component.Update(&s.environment, s)
 			}
+			s.logCurrentState() // Log the current state
 		}
 	}
 }
@@ -249,4 +253,39 @@ func (s *Simulation) Stop() {
 	if s.running {
 		close(s.stopChan)
 	}
+}
+
+// New method to log the current state
+func (s *Simulation) logCurrentState() {
+	currentStatus := s.Status()                  // Get current status
+	s.history = append(s.history, currentStatus) // Append to history
+	err := s.WriteHistoryToFile("simulation_history.json")
+	if err != nil {
+		fmt.Println("Error writing history to file:", err)
+	}
+}
+
+// New method to get history
+func (s *Simulation) GetHistory() []map[string]interface{} {
+	return s.history
+}
+
+func (s *Simulation) WriteHistoryToFile(filePath string) error {
+	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for _, entry := range s.history {
+		data, err := json.Marshal(entry)
+		if err != nil {
+			return err
+		}
+		_, err = file.Write(append(data, '\n')) // Write each entry as a new line
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
