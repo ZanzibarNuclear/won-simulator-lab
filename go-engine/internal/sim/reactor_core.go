@@ -35,7 +35,7 @@ func (rc *ReactorCore) ConnectToPrimaryLoop(primaryLoop *PrimaryLoop) {
 
 func (rc *ReactorCore) Update(env *Environment, s *Simulation) {
 	// Update reactivity based on control rod insertion
-	rc.reactivity = 1.0 - rc.controlRods.CalculateAverageInsertion()
+	rc.reactivity = 0.01
 
 	// Update heat energy rate based on reactivity
 	rc.heatEnergyRate = 3000.0 * rc.reactivity // Assuming max output of 3000 MW
