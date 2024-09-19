@@ -1,93 +1,50 @@
 package sim
 
-const (
-	MAX_WITHDRAWAL_STEPS = 200
-	CONTROL_ROD_SPEED    = 40 // steps per minute
-)
-
-type ControlBank struct {
-	position int // in steps
-	numRods  int
-}
-
-func (cb *ControlBank) FullyWithdrawn() bool {
-	return cb.position == MAX_WITHDRAWAL_STEPS
-}
-
-func (cb *ControlBank) FullyInserted() bool {
-	return cb.position == 0
-}
-
-func (cb *ControlBank) MoveTowardTarget(target int) {
-	if target > cb.position {
-		cb.position += min(CONTROL_ROD_SPEED, target-cb.position)
-	} else if target < cb.position {
-		cb.position -= min(CONTROL_ROD_SPEED, cb.position-target)
-	}
-}
-
 type ControlRods struct {
-	controlBanks          [7]ControlBank
-	shutdownBanks         [4]ControlBank
-	withdrawShutdownBanks bool // gradually
-	insertShutdownBanks   bool // gradually
-	scramNow              bool // drop all rods at once
+	controlBanks          [7]*ControlBank
+	shutdownBanks         [4]*ShutdownBank
+	withdrawShutdownBanks bool // rods go up when true, down when false
 }
 
 func NewControlRods() *ControlRods {
 	cr := &ControlRods{}
 
+	// Initialize Control Banks
 	for i := 0; i < 5; i++ {
-		cr.controlBanks[i] = ControlBank{numRods: 4}
+		cr.controlBanks[i] = NewControlBank(4) // Assuming 4 rods per bank
 	}
-	cr.controlBanks[5] = ControlBank{numRods: 8}
-	cr.controlBanks[6] = ControlBank{numRods: 9}
+	cr.controlBanks[5] = NewControlBank(8)
+	cr.controlBanks[6] = NewControlBank(9)
 
+	// Initialize Shutdown Banks
 	for i := 0; i < 4; i++ {
-		cr.shutdownBanks[i] = ControlBank{numRods: 8}
+		cr.shutdownBanks[i] = NewShutdownBank(8) // Assuming 4 rods per bank
 	}
 
 	return cr
 }
 
-func (cr *ControlRods) Update() {
-	if cr.withdrawShutdownBanks && !cr.ShutdownBanksFullyWithdrawn() {
-		for _, bank := range cr.shutdownBanks {
-			if !bank.FullyWithdrawn() {
-				bank.MoveTowardTarget(MAX_WITHDRAWAL_STEPS)
-				break // Only start withdrawing one bank at a time
-			}
-		}
+// bank 1 thru 7
+func (cr *ControlRods) AdjustControlBankPosition(bank int, target int) {
+	if bank < 1 || bank > 7 {
+		// throw out of bounds error
+		// panic("bank out of bounds")
+		return
 	}
-
-	if cr.insertShutdownBanks && !cr.ShutdownBanksFullyInserted() {
-		for i := len(cr.shutdownBanks) - 1; i >= 0; i-- {
-			bank := cr.shutdownBanks[i]
-			if !bank.FullyInserted() {
-				bank.MoveTowardTarget(0)
-				break
-			}
-		}
-	}
-}
-
-func (cr *ControlRods) Scram() {
-	cr.scramNow = true
+	cr.controlBanks[bank-1].SetTarget(target)
 }
 
 func (cr *ControlRods) InitiateShutdownBankWithdrawal() {
 	cr.withdrawShutdownBanks = true
-	cr.insertShutdownBanks = false
 }
 
 func (cr *ControlRods) InitiateShutdownBankInsertion() {
-	cr.insertShutdownBanks = true
 	cr.withdrawShutdownBanks = false
 }
 
 func (cr *ControlRods) ShutdownBanksFullyWithdrawn() bool {
 	for _, bank := range cr.shutdownBanks {
-		if !bank.FullyWithdrawn() {
+		if !bank.IsFullyWithdrawn() {
 			return false
 		}
 	}
@@ -96,34 +53,55 @@ func (cr *ControlRods) ShutdownBanksFullyWithdrawn() bool {
 
 func (cr *ControlRods) ShutdownBanksFullyInserted() bool {
 	for _, bank := range cr.shutdownBanks {
-		if !bank.FullyInserted() {
+		if !bank.IsFullyInserted() {
 			return false
 		}
 	}
 	return true
 }
 
-func (cr *ControlRods) Status() map[string]interface{} {
-	controlBanksStatus := make([]map[string]interface{}, len(cr.controlBanks))
-	for i, bank := range cr.controlBanks {
-		controlBanksStatus[i] = map[string]interface{}{
-			"controlBankNum": i,
-			"position":       bank.position,
+func (cr *ControlRods) Update() {
+	if cr.withdrawShutdownBanks {
+		for _, bank := range cr.shutdownBanks {
+			if !bank.IsFullyWithdrawn() {
+				if bank.Target() == 0 {
+					bank.Withdraw()
+				}
+				break
+			}
+		}
+	} else {
+		for _, bank := range cr.shutdownBanks {
+			if !bank.IsFullyInserted() {
+				if bank.Target() != 0 {
+					bank.Insert()
+				}
+				break
+			}
 		}
 	}
 
-	shutdownBanksStatus := make([]map[string]interface{}, len(cr.shutdownBanks))
+	for _, bank := range cr.controlBanks {
+		bank.Update()
+	}
+	for _, bank := range cr.shutdownBanks {
+		bank.Update()
+	}
+}
+
+func (cr *ControlRods) Status() map[string]interface{} {
+	controlBankPositions := make([]int, len(cr.controlBanks))
+	for i, bank := range cr.controlBanks {
+		controlBankPositions[i] = bank.Position()
+	}
+
+	shutdownBankPositions := make([]int, len(cr.shutdownBanks))
 	for i, bank := range cr.shutdownBanks {
-		shutdownBanksStatus[i] = map[string]interface{}{
-			"shutdownBankNum": i,
-			"position":        bank.position,
-		}
+		shutdownBankPositions[i] = bank.Position()
 	}
 
 	return map[string]interface{}{
-		"controlBanks":          controlBanksStatus,
-		"shutdownBanks":         shutdownBanksStatus,
-		"withdrawShutdownBanks": cr.withdrawShutdownBanks,
-		"insertShutdownBanks":   cr.insertShutdownBanks,
+		"controlBanks":  controlBankPositions,
+		"shutdownBanks": shutdownBankPositions,
 	}
 }

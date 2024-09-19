@@ -7,18 +7,32 @@ import (
 
 func TestInitiateShutdownBankWithdrawal(t *testing.T) {
 	cr := NewControlRods()
-	fmt.Printf("Initial Status: %v\n", cr.Status())
+
+	cr.Update() // do nothing
+
+	// Ensure all shutdown banks are initially fully inserted
+	if !cr.ShutdownBanksFullyInserted() {
+		t.Errorf("Expected shutdown banks to be fully inserted initially")
+	}
 
 	cr.InitiateShutdownBankWithdrawal()
 
-	for i := 0; i < 3; i++ {
+	// Update until shutdown banks are fully withdrawn
+	for i := 0; i < 1000 && !cr.ShutdownBanksFullyWithdrawn(); i++ {
 		cr.Update()
-		status := cr.Status()
-		fmt.Printf("Update %d:\n", i+1)
-		fmt.Printf("Control Banks: %v\n", status["controlBanks"])
-		fmt.Printf("Shutdown Banks: %v\n", status["shutdownBanks"])
-		fmt.Printf("Withdraw Shutdown Banks: %v\n", status["withdrawShutdownBanks"])
-		fmt.Printf("Insert Shutdown Banks: %v\n", status["insertShutdownBanks"])
-		fmt.Println()
+	}
+
+	fmt.Printf("Status: %+v\n", cr.Status())
+
+	// Check if shutdown banks are fully withdrawn
+	if !cr.ShutdownBanksFullyWithdrawn() {
+		t.Errorf("Expected shutdown banks to be fully withdrawn after updates")
+	}
+
+	// Verify that control banks were not affected
+	for i, bank := range cr.controlBanks {
+		if bank.Position() != 0 {
+			t.Errorf("Control bank %d position changed unexpectedly: got %d, want 0", i+1, bank.Position())
+		}
 	}
 }
