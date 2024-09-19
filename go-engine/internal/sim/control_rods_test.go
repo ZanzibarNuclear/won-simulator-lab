@@ -117,12 +117,13 @@ func TestShutdownBankPartialWithdrawalAndInsertion(t *testing.T) {
 func TestAdjustControlBankPosition(t *testing.T) {
 	cr := NewControlRods()
 
-	// Test raising control rods in group 3 to position 50
+	// Test raising specific banks to given positions
 	cr.AdjustControlBankPosition(3, 50)
 	cr.AdjustControlBankPosition(4, 75)
+	cr.AdjustGrayBankPosition(1, 62)
 
 	// Update until the target position is reached or a timeout occurs
-	for i := 0; i < 100 && cr.controlBanks[2].Position() != 50; i++ {
+	for i := 0; i < 100 && !(cr.controlBanks[2].Position() == 50 && cr.controlBanks[3].Position() == 75 && cr.controlBanks[0].Position() == 62); i++ {
 		cr.Update()
 	}
 
@@ -137,11 +138,19 @@ func TestAdjustControlBankPosition(t *testing.T) {
 		t.Errorf("Control bank 4 did not reach target position: got %d, want 75", cr.controlBanks[3].Position())
 	}
 
+	if cr.grayBanks[0].Position() != 62 {
+		t.Errorf("Gray bank 1 did not reach target position: got %d, want 62", cr.grayBanks[0].Position())
+	}
+
 	// Verify that other control banks were not affected
 	for i, bank := range cr.controlBanks {
 		if i != 2 && i != 3 && bank.Position() != 0 {
 			t.Errorf("Control bank %d position changed unexpectedly: got %d, want 0", i+1, bank.Position())
 		}
+	}
+
+	if cr.grayBanks[1].Position() != 0 {
+		t.Errorf("Control bank 2 position changed unexpectedly: got %d, want 0", cr.grayBanks[1].Position())
 	}
 
 	// Verify that shutdown banks were not affected

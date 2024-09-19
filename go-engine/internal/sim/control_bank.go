@@ -1,21 +1,28 @@
 package sim
 
 const (
-	MaxWithdrawalSteps = 200
+	MAX_WITHDRAWAL_STEPS = 250
+	WITHDRAWAL_RATE      = 50 // steps per minute
 )
 
 type ControlBank struct {
-	position int // in steps, from 0 to MaxWithdrawalSteps
+	label    string
 	numRods  int
+	position int // in steps, from 0 to MaxWithdrawalSteps
 	target   int // target position
 }
 
-func NewControlBank(numRods int) *ControlBank {
+func NewControlBank(label string, numRods int) *ControlBank {
 	return &ControlBank{
-		position: 0,
+		label:    label,
 		numRods:  numRods,
+		position: 0,
 		target:   0,
 	}
+}
+
+func (cb *ControlBank) Label() string {
+	return cb.label
 }
 
 func (cb *ControlBank) Position() int {
@@ -33,8 +40,8 @@ func (cb *ControlBank) Target() int {
 func (cb *ControlBank) SetTarget(target int) {
 	if target < 0 {
 		cb.target = 0
-	} else if target > MaxWithdrawalSteps {
-		cb.target = MaxWithdrawalSteps
+	} else if target > MAX_WITHDRAWAL_STEPS {
+		cb.target = MAX_WITHDRAWAL_STEPS
 	} else {
 		cb.target = target
 	}
@@ -42,9 +49,9 @@ func (cb *ControlBank) SetTarget(target int) {
 
 func (cb *ControlBank) Update() {
 	if cb.position < cb.target {
-		cb.position = min(cb.position+40, cb.target)
+		cb.position = min(cb.position+WITHDRAWAL_RATE, cb.target)
 	} else if cb.position > cb.target {
-		cb.position = max(cb.position-40, cb.target)
+		cb.position = max(cb.position-WITHDRAWAL_RATE, cb.target)
 	}
 }
 
@@ -63,7 +70,7 @@ func max(a, b int) int {
 }
 
 func (cb *ControlBank) IsFullyWithdrawn() bool {
-	return cb.position == MaxWithdrawalSteps
+	return cb.position == MAX_WITHDRAWAL_STEPS
 }
 
 func (cb *ControlBank) IsFullyInserted() bool {
@@ -79,9 +86,10 @@ type ShutdownBank struct {
 	ControlBank
 }
 
-func NewShutdownBank(numRods int) *ShutdownBank {
+func NewShutdownBank(label string, numRods int) *ShutdownBank {
 	return &ShutdownBank{
 		ControlBank: ControlBank{
+			label:    label,
 			numRods:  numRods,
 			position: 0,
 			target:   0,
@@ -90,7 +98,7 @@ func NewShutdownBank(numRods int) *ShutdownBank {
 }
 
 func (sb *ShutdownBank) Withdraw() {
-	sb.SetTarget(MaxWithdrawalSteps)
+	sb.SetTarget(MAX_WITHDRAWAL_STEPS)
 }
 
 func (sb *ShutdownBank) Insert() {

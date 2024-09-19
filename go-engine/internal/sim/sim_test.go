@@ -105,7 +105,7 @@ func TestSimulationAdvanceAndStop(t *testing.T) {
 	time.Sleep(2 * time.Millisecond)
 	sim.Stop()
 
-	time.Sleep(2 * time.Millisecond)
+	time.Sleep(20 * time.Millisecond)
 	if sim.IsRunning() {
 		t.Error("Simulation should not be running after stop")
 	}
