@@ -85,6 +85,31 @@ nav ul li a.active {
   color: white;
 }
 
+.submenu ul {
+  display: none; /* Hide submenu by default */
+  position: absolute; /* Position it absolutely */
+  background-color: #fff; /* Background color */
+  border: 1px solid #ccc; /* Border for the submenu */
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+.submenu:hover ul {
+  display: block; /* Show submenu on hover */
+}
+
+.submenu li {
+  padding: 10px; /* Padding for submenu items */
+}
+
+.submenu li a {
+  color: #333; /* Text color for submenu links */
+  text-decoration: none; /* Remove underline */
+}
+
+.submenu li a:hover {
+  background-color: #f0f0f0; /* Background color on hover */
+}
+
 main {
   flex: 1;
   padding: 1rem;
