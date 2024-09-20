@@ -96,11 +96,10 @@ func spawnSimulation(name, motto string) *sim.Simulation {
 	simmy.AddComponent(primaryLoop)
 
 	secondaryLoop := sim.NewSecondaryLoop("Secondary Loop")
-	// secondaryLoop.SwitchOnFeedwaterPump()
-	// secondaryLoop.SwitchOnFeedheaters()
 	simmy.AddComponent(secondaryLoop)
 
 	reactorCore := sim.NewReactorCore("Reactor Core")
+	reactorCore.ConnectToPrimaryLoop(primaryLoop)
 	simmy.AddComponent(reactorCore)
 
 	pressurizer := sim.NewPressurizer("Pressurizer")

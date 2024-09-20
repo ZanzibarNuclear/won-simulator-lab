@@ -30,12 +30,8 @@ func NewReactorCore(name string) *ReactorCore {
 	}
 }
 
-func (rc *ReactorCore) ConnectToControlRods(controlRods *ControlRods) {
-	rc.controlRods = controlRods
-}
-
-func (rc *ReactorCore) ConnectToPrimaryLoop(primaryLoop *PrimaryLoop) {
-	rc.primaryLoop = primaryLoop
+func (rc *ReactorCore) ConnectToPrimaryLoop(loop *PrimaryLoop) {
+	rc.primaryLoop = loop
 }
 
 const (
@@ -106,7 +102,11 @@ func (rc *ReactorCore) Update(env *Environment, s *Simulation) {
 	//   this is a major simplification, but ought to be enough detail to tease out the interaction
 
 	// sum up reactivity from all factors; TODO: find a more predictive formula
-	reactivity := 0.0
+	reactivity := -1.0
+
+	if rc.primaryLoop == nil {
+		rc.primaryLoop = s.FindPrimaryLoop()
+	}
 	if rc.primaryLoop.boronConcentration < targetBoronConcentration {
 		reactivity += 0.01
 	} else if rc.primaryLoop.boronConcentration > targetBoronConcentration {
