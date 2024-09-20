@@ -1,102 +1,111 @@
 {{define "title"}}WoN Simulation Lab{{end}}
 {{define "index"}}
-    <h2>World of Nuclear &ndash; Simulation Lab</h2>
-    <div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
-        <img src="/static/images/Zanzibar-2024-07.jpg" alt="Zanzibar" style="width: 250px; margin-right: 20px; float: left;">
-        <div>
-            <p>Welcome to the World of Nuclear Simulation Lab, where you can explore the intricacies of nuclear power generation in a safe, virtual environment. Our simulator provides a hands-on experience for understanding the complexities of nuclear energy production.</p>
-            <p>Whether you're a student, professional, or simply curious about nuclear technology, this platform offers valuable insights into the operation and management of nuclear power plants.</p>
-            <p>I am Zanzibar, and I am your guide through this virtual world. At the moment, things are in the early stages, but I am working on adding more simulations and features to make your experience more engaging and educational.</p>
-            <p>Please enjoy what is here, and become a member of the World of Nuclear!</p>
-        </div>
-    </div>
-    <h3>Simulators in Operation</h3>
+<h2>World of Nuclear &ndash; Simulation Lab</h2>
+<div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
+    <img src="/static/images/Zanzibar-2024-07.jpg" alt="Zanzibar"
+        style="width: 250px; margin-right: 20px; float: left;">
     <div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <p>Play with one of these simulators. Or start a new one!</p>
-            <div style="text-align: right;">
-                <button id="buildSimButton" class="build-sim-button">Build Your Own</button>
-            </div>
-        </div>
+        <p>Welcome to the World of Nuclear Simulation Lab, where you can explore the intricacies of nuclear power
+            generation in a safe, virtual environment. Our simulator provides a hands-on experience for understanding
+            the complexities of nuclear energy production.</p>
+        <p>Whether you're a student, professional, or simply curious about nuclear technology, this platform offers
+            valuable insights into the operation and management of nuclear power plants.</p>
+        <p>I am Zanzibar, and I am your guide through this virtual world. At the moment, things are in the early stages,
+            but I am working on adding more simulations and features to make your experience more engaging and
+            educational.</p>
+        <p>Please enjoy what is here, and become a member of the World of Nuclear!</p>
+    </div>
+</div>
+<h3>Simulators in Operation</h3>
+<div>
+    <p>This is the kind of nuclear power plant we are modeling. It's called a pressurized water reactor, or PWR.</p>
+    <div class="photo-frame">
+        <img src="/static/images/pwr-animated.gif" alt="PWR" style="width: 500px;">
+        <p class="photo-credit">Thanks to the US Nuclear Regulatory Commission for the use of this animation. (<a
+                href="https://www.nrc.gov/reading-rm/basic-ref/students/animated-pwr.html">source</a>)</p>
+    </div>
+</div>
+<div>
+    <p style="margin-top: 2rem;"><button id="buildSimButton" class="build-sim-button">Start Your Own</button> Or borrow
+        one of these. <iconify-icon icon="ph:arrow-down-bold" /></p>
+    <div id="simPopup" class="sim-popup">
+        <div class="sim-popup-content">
+            <h3>Create New Simulator</h3>
+            <form id="simForm">
+                <label for="simName">Name:</label>
+                <input type="text" id="simName" name="simName" required>
 
-        <div id="simPopup" class="sim-popup">
-            <div class="sim-popup-content">
-                <h3>Create New Simulator</h3>
-                <form id="simForm">
-                    <label for="simName">Name:</label>
-                    <input type="text" id="simName" name="simName" required>
-                    
-                    <label for="simMotto">Motto:</label>
-                    <input type="text" id="simMotto" name="simMotto" required>
-                    
-                    <div class="button-group">
-                        <button type="submit">Submit</button>
-                        <button type="button" id="cancelButton">Cancel</button>
-                    </div>
-                </form>
-            </div>
+                <label for="simMotto">Motto:</label>
+                <input type="text" id="simMotto" name="simMotto" required>
+
+                <div class="button-group">
+                    <button type="submit">Submit</button>
+                    <button type="button" id="cancelButton">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
-    <div id="simulations-grid" class="simulations-grid">
-        <!-- Simulations will be populated here -->
-    </div>
+</div>
+<div id="simulations-grid" class="simulations-grid">
+    <!-- Simulations will be populated here -->
+</div>
 
-    <script>
-        const buildSimButton = document.getElementById('buildSimButton');
-        const simPopup = document.getElementById('simPopup');
-        const simForm = document.getElementById('simForm');
-        const cancelButton = document.getElementById('cancelButton');
+<script>
+    const buildSimButton = document.getElementById('buildSimButton');
+    const simPopup = document.getElementById('simPopup');
+    const simForm = document.getElementById('simForm');
+    const cancelButton = document.getElementById('cancelButton');
 
-        buildSimButton.addEventListener('click', () => {
-            simPopup.style.display = 'block';
-        });
+    buildSimButton.addEventListener('click', () => {
+        simPopup.style.display = 'block';
+    });
 
-        cancelButton.addEventListener('click', () => {
-            simPopup.style.display = 'none';
-        });
+    cancelButton.addEventListener('click', () => {
+        simPopup.style.display = 'none';
+    });
 
-        simForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('simName').value;
-            const motto = document.getElementById('simMotto').value;
+    simForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('simName').value;
+        const motto = document.getElementById('simMotto').value;
 
-            try {
-                const response = await fetch('/api/sims', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ name, motto }),
-                });
+        try {
+            const response = await fetch('/api/sims', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, motto }),
+            });
 
-                if (!response.ok) {
-                    throw new Error('Failed to create simulator');
-                }
-
-                const newSim = await response.json();
-                window.location.href = `/operator?id=${newSim.id}`;
-            } catch (error) {
-                console.error('Error creating simulator:', error);
-                alert('Failed to create simulator. Please try again.');
+            if (!response.ok) {
+                throw new Error('Failed to create simulator');
             }
-        });
 
-fetch('/api/sims')
-            .then(response => response.json())
-            .then(simulations => {
-                const simulationsGrid = document.getElementById('simulations-grid');
-                simulations.forEach(sim => {
-                    const card = document.createElement('div');
-                    card.className = 'sim-card';
-                    card.innerHTML = `
+            const newSim = await response.json();
+            window.location.href = `/operator?id=${newSim.id}`;
+        } catch (error) {
+            console.error('Error creating simulator:', error);
+            alert('Failed to create simulator. Please try again.');
+        }
+    });
+
+    fetch('/api/sims')
+        .then(response => response.json())
+        .then(simulations => {
+            const simulationsGrid = document.getElementById('simulations-grid');
+            simulations.forEach(sim => {
+                const card = document.createElement('div');
+                card.className = 'sim-card';
+                card.innerHTML = `
                             <h3>${sim.name}</h3>
                             <p><em>"${sim.motto}"</em></p>
                             <p>Spawned: ${new Date(sim.spawned_at).toLocaleString()}</p>
                             <button onclick="window.location.href='/operator?id=${sim.id}'">Operate</button>
                         `;
-                    simulationsGrid.appendChild(card);
-                });
-            })
-            .catch(error => console.error('Error fetching simulations:', error));
-    </script>
+                simulationsGrid.appendChild(card);
+            });
+        })
+        .catch(error => console.error('Error fetching simulations:', error));
+</script>
 {{end}}
