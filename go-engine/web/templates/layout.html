@@ -25,6 +25,8 @@
             {{template "operator" .}}
             {{else if eq .template "analysis"}}
             {{template "analysis" .}}
+            {{else if eq .template "primary-loop" }}
+            {{template "primary-loop" .}}
             {{else}}
             <p>Template not found</p>
             {{end}}

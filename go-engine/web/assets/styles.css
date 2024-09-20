@@ -85,6 +85,31 @@ nav ul li a.active {
   color: white;
 }
 
+.submenu ul {
+  display: none; /* Hide submenu by default */
+  position: absolute; /* Position it absolutely */
+  background-color: #fff; /* Background color */
+  border: 1px solid #ccc; /* Border for the submenu */
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+.submenu:hover ul {
+  display: block; /* Show submenu on hover */
+}
+
+.submenu li {
+  padding: 10px; /* Padding for submenu items */
+}
+
+.submenu li a {
+  color: #333; /* Text color for submenu links */
+  text-decoration: none; /* Remove underline */
+}
+
+.submenu li a:hover {
+  background-color: #f0f0f0; /* Background color on hover */
+}
+
 main {
   flex: 1;
   padding: 1rem;
@@ -240,8 +265,69 @@ footer {
   border-radius: 4px;
   padding: 10px;
   margin-bottom: 10px;
+  font-size: small;
 }
 
+.component-card p {
+  margin: 0.5rem 0;
+}
 .component-card h4 {
   margin-top: 0;
+}
+
+.control-group {
+  display: flex; /* Aligns items in a row */
+  align-items: center; /* Vertically centers items */
+  margin-bottom: 15px; /* Space between groups */
+}
+
+.control-group label {
+  flex: 0 0 150px; /* Fixed width for labels */
+  margin-right: 10px; /* Space between label and input */
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px; /* Width of the switch */
+  height: 28px; /* Height of the switch */
+}
+
+.toggle-switch input {
+  opacity: 0; /* Hide the default checkbox */
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc; /* Background color when off */
+  transition: 0.4s; /* Transition effect */
+  border-radius: 34px; /* Rounded corners */
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px; /* Height of the slider */
+  width: 20px; /* Width of the slider */
+  left: 4px; /* Position of the slider */
+  bottom: 4px; /* Position of the slider */
+  background-color: white; /* Slider color */
+  transition: 0.4s; /* Transition effect */
+  border-radius: 50%; /* Rounded slider */
+}
+
+/* Change background color and slider position when checked */
+input:checked + .toggle-slider {
+  background-color: #2196f3; /* Background color when on */
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(30px); /* Move slider to the right */
 }

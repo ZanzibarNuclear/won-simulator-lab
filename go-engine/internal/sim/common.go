@@ -22,7 +22,7 @@ func (e *Environment) String() string {
 	return e.Weather
 }
 
-const ROOM_TEMPERATURE = 20
+const ROOM_TEMPERATURE = 20.0
 const TURBINE_MAX_RPM = 3600
 
 // common run durations, assuming 1-minute iterations

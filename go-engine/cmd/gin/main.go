@@ -84,6 +84,10 @@ func main() {
 	router.PUT("/api/sims/:id/feedwater-pump/off", turnOffFeedwaterPump)
 	router.PUT("/api/sims/:id/feedheaters/on", turnOnFeedheaters)
 	router.PUT("/api/sims/:id/feedheaters/off", turnOffFeedheaters)
+	router.PUT("/api/sims/:id/pressurizer/heater/on", turnOnHeater)
+	router.PUT("/api/sims/:id/pressurizer/heater/off", turnOffHeater)
+	router.PUT("/api/sims/:id/pressurizer/spray-nozzle/open", openSprayNozzle)
+	router.PUT("/api/sims/:id/pressurizer/spray-nozzle/close", closeSprayNozzle)
 
 	router.Run(":8080")
 }
@@ -96,11 +100,10 @@ func spawnSimulation(name, motto string) *sim.Simulation {
 	simmy.AddComponent(primaryLoop)
 
 	secondaryLoop := sim.NewSecondaryLoop("Secondary Loop")
-	// secondaryLoop.SwitchOnFeedwaterPump()
-	// secondaryLoop.SwitchOnFeedheaters()
 	simmy.AddComponent(secondaryLoop)
 
 	reactorCore := sim.NewReactorCore("Reactor Core")
+	reactorCore.ConnectToPrimaryLoop(primaryLoop)
 	simmy.AddComponent(reactorCore)
 
 	pressurizer := sim.NewPressurizer("Pressurizer")
@@ -333,4 +336,49 @@ func turnOffFeedheaters(c *gin.Context) {
 	simulation.FindSecondaryLoop().SwitchOffFeedheaters()
 	c.JSON(http.StatusOK, simulation.Status())
 
+}
+
+func turnOnHeater(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+
+	simulation.FindPressurizer().SwitchOnHeater()
+	c.JSON(http.StatusOK, simulation.Status())
+}
+
+func turnOffHeater(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+	simulation.FindPressurizer().SwitchOffHeater()
+	c.JSON(http.StatusOK, simulation.Status())
+}
+
+func openSprayNozzle(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+	simulation.FindPressurizer().OpenSprayNozzle()
+	c.JSON(http.StatusOK, simulation.Status())
+}
+
+func closeSprayNozzle(c *gin.Context) {
+	simulationID := c.Param("id")
+	simulation, exists := simCache[simulationID]
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Simulation not found"})
+		return
+	}
+	simulation.FindPressurizer().CloseSprayNozzle()
+	c.JSON(http.StatusOK, simulation.Status())
 }

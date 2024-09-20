@@ -24,7 +24,8 @@ const PUMP_ON_PRESSURE = 1.0   // MPa
 const PUMP_ON_FLOW_RATE = 20.0 // in m³/s
 const PUMP_OFF_PRESSURE = 0
 const PUMP_OFF_FLOW_RATE = 0
-const MAX_BORON_RATE_OF_CHANGE = 5.0 // ppm/minute
+const MAX_BORON_RATE_OF_CHANGE = 5.0   // ppm/minute
+const MAX_BORON_CONCENTRATION = 2500.0 // ppm
 
 func NewPrimaryLoop(name string) *PrimaryLoop {
 	return &PrimaryLoop{
