@@ -150,24 +150,17 @@ func (cr *ControlRods) Update() {
 }
 
 func (cr *ControlRods) Status() map[string]interface{} {
-	controlBankPositions := make([]int, len(cr.controlBanks))
-	for i, bank := range cr.controlBanks {
-		controlBankPositions[i] = bank.Position()
+	status := make(map[string]interface{})
+
+	for _, bank := range cr.controlBanks {
+		status[bank.Label()] = bank.Status()
+	}
+	for _, bank := range cr.grayBanks {
+		status[bank.Label()] = bank.Status()
+	}
+	for _, bank := range cr.shutdownBanks {
+		status[bank.Label()] = bank.Status()
 	}
 
-	grayBankPositions := make([]int, len(cr.grayBanks))
-	for i, bank := range cr.grayBanks {
-		grayBankPositions[i] = bank.Position()
-	}
-
-	shutdownBankPositions := make([]int, len(cr.shutdownBanks))
-	for i, bank := range cr.shutdownBanks {
-		shutdownBankPositions[i] = bank.Position()
-	}
-
-	return map[string]interface{}{
-		"controlBanks":  controlBankPositions,
-		"grayBanks":     grayBankPositions,
-		"shutdownBanks": shutdownBankPositions,
-	}
+	return status
 }

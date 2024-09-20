@@ -84,6 +84,9 @@ func (p *Pressurizer) Update(env *Environment, s *Simulation) {
 		}
 	} else {
 		p.pressure -= 0.25 // MPa, assumption: pressure drops slowly when heater off
+		if p.pressure < 0.0 {
+			p.pressure = 0.0
+		}
 	}
 
 	if p.sprayNozzleOpen {
