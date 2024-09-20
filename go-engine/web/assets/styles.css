@@ -188,6 +188,36 @@ footer {
   background-color: #218838;
 }
 
+.go-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.go-button:hover {
+  background-color: #218838;
+}
+
+.refresh-button {
+  background-color: #4e9bb9;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.refresh-button:hover {
+  background-color: #096e90;
+}
+
 .sim-popup {
   display: none;
   position: fixed;

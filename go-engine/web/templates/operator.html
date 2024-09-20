@@ -16,28 +16,6 @@
         </div>
         <div class="controls-column">
             <div class="sim-controls">
-                <h3>Run Simulation</h3>
-                <div class="advance-control">
-                    <select id="advance-steps">
-                        <option value="1" selected>1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                    </select>
-                    <select id="advance-unit">
-                        <option value="minutes" selected>Minutes</option>
-                        <option value="hours">Hours</option>
-                        <option value="days">Days</option>
-                    </select>
-                    <button id="advance-sim">Advance Simulation</button>
-                    <button id="refresh-status">Refresh Status</button>
-                </div>
                 <div class="component-controls">
                     <h3>Controls</h3>
                     <div class="toggle-container">
@@ -76,15 +54,33 @@
                         <span class="toggle-switch-label">Pressurizer Spray Nozzle</span>
                     </div>
                 </div>
+                <h3>Run Simulation</h3>
+                <div class="advance-control">
+                    <button id="advance-sim" class="go-button">Advance</button>
+                    <select id="advance-steps">
+                        <option value="1" selected>1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                    <select id="advance-unit">
+                        <option value="minutes" selected>Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                    </select>
+                    <button id="refresh-status" class="refresh-button">Refresh Status</button>
+                </div>
             </div>
         </div>
         <div class="full-width-column">
-            <h3>Operational Status</h3>
-            <div class="sim-details">
-                <p><strong>State:</strong> <span id="operational-state"></span></p>
-            </div>
+            <h3>Component Operational Status</h3>
             <div class="component-status">
-                <h3>Components</h3>
                 <div id="component-cards" class="simulations-grid">
                     <!-- Component cards will be dynamically inserted here -->
                 </div>
@@ -131,7 +127,6 @@
             document.getElementById('current-iteration').textContent = status.iterationNumber;
             document.getElementById('current-power-on').textContent = status.powerOn ? 'Yes' : 'No';
             document.getElementById('current-weather').textContent = status.weather || 'N/A';
-            document.getElementById('operational-state').textContent = status.running ? 'Running' : 'Stopped';
             updateComponentCards(status.components)
         }
 
