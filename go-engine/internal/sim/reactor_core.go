@@ -127,7 +127,7 @@ func (rc *ReactorCore) Update(env *Environment, s *Simulation) {
 	}
 
 	// Update heat energy rate based on reactivity
-	rc.heatEnergyRate = 3000.0 * rc.reactivity // Assuming max output of 3000 MW
+	rc.heatEnergyRate = 3000.0 * (rc.reactivity + 1.0) // Assuming max output of 3000 MW
 
 	// Simple temperature model (this should be more complex in reality)
 	rc.temperature += (rc.heatEnergyRate / 1000.0) * 0.1          // Simplified heating
@@ -141,7 +141,7 @@ func (rc *ReactorCore) Status() map[string]interface{} {
 		"neutronFlux":    rc.neutronFlux,
 		"temperature":    rc.temperature,
 		"heatEnergyRate": rc.heatEnergyRate,
-		"controlRods":    rc.controlRods,
+		"controlRods":    rc.controlRods.Status(),
 	}
 }
 
@@ -151,7 +151,7 @@ func (rc *ReactorCore) PrintStatus() {
 	fmt.Printf("\tNeutron Flux: %.2f\n", rc.neutronFlux)
 	fmt.Printf("\tTemperature: %.2f°C\n", rc.temperature)
 	fmt.Printf("\tHeat Energy Rate: %.2f MW\n", rc.heatEnergyRate)
-	fmt.Printf("\tControl Rods: %v\n", rc.controlRods)
+	fmt.Printf("\tControl Rods: %v\n", rc.controlRods.Status())
 }
 
 func (rc *ReactorCore) HeatEnergyRate() float64 {

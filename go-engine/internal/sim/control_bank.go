@@ -21,6 +21,15 @@ func NewControlBank(label string, numRods int) *ControlBank {
 	}
 }
 
+func (cb *ControlBank) Status() map[string]interface{} {
+	return map[string]interface{}{
+		"label":    cb.label,
+		"numRods":  cb.numRods,
+		"position": cb.position,
+		"target":   cb.target,
+	}
+}
+
 func (cb *ControlBank) Label() string {
 	return cb.label
 }

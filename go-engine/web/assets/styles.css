@@ -126,6 +126,18 @@ footer {
   padding-right: 0.5rem;
 }
 
+.photo-frame {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  width: 500px;
+  margin: 10px auto;
+}
+
+.photo-credit {
+  font-size: small;
+}
+
 /* == for simulators grid == */
 
 .simulations-grid {
@@ -186,6 +198,36 @@ footer {
 
 .build-sim-button:hover {
   background-color: #218838;
+}
+
+.go-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.go-button:hover {
+  background-color: #218838;
+}
+
+.refresh-button {
+  background-color: #4e9bb9;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.refresh-button:hover {
+  background-color: #096e90;
 }
 
 .sim-popup {
@@ -284,19 +326,38 @@ footer {
 .control-group label {
   flex: 0 0 150px; /* Fixed width for labels */
   margin-right: 10px; /* Space between label and input */
+  font-size: small;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.toggle-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  z-index: 1;
 }
 
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 60px; /* Width of the switch */
-  height: 28px; /* Height of the switch */
+  width: 50px;
+  height: 24px;
+  margin-right: 10px; /* Add space between switch and label */
 }
 
-.toggle-switch input {
-  opacity: 0; /* Hide the default checkbox */
-  width: 0;
-  height: 0;
+.toggle-switch-label {
+  cursor: pointer;
+  font-size: 14px;
+  vertical-align: middle;
 }
 
 .toggle-slider {
@@ -308,14 +369,14 @@ footer {
   bottom: 0;
   background-color: #ccc; /* Background color when off */
   transition: 0.4s; /* Transition effect */
-  border-radius: 34px; /* Rounded corners */
+  border-radius: 30px; /* Rounded corners */
 }
 
 .toggle-slider:before {
   position: absolute;
   content: "";
-  height: 20px; /* Height of the slider */
-  width: 20px; /* Width of the slider */
+  height: 16px; /* Height of the slider */
+  width: 16px; /* Width of the slider */
   left: 4px; /* Position of the slider */
   bottom: 4px; /* Position of the slider */
   background-color: white; /* Slider color */
@@ -329,5 +390,5 @@ input:checked + .toggle-slider {
 }
 
 input:checked + .toggle-slider:before {
-  transform: translateX(30px); /* Move slider to the right */
+  transform: translateX(26px); /* Move slider to the right */
 }

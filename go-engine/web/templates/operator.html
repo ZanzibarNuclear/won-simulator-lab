@@ -16,59 +16,71 @@
         </div>
         <div class="controls-column">
             <div class="sim-controls">
-                <h3>Simulator Controls</h3>
+                <div class="component-controls">
+                    <h3>Controls</h3>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="primary-pump-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-switch-label">Primary Loop Pump</span>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="feedwater-pump-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-switch-label">Feedback Pump</span>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="feedheaters-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-switch-label">Feedheaters</span>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="pressurizer-heater-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-switch-label">Pressurizer Heater</span>
+                    </div>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="pressurizer-spray-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-switch-label">Pressurizer Spray Nozzle</span>
+                    </div>
+                </div>
+                <h3>Run Simulation</h3>
                 <div class="advance-control">
+                    <button id="advance-sim" class="go-button">Advance</button>
                     <select id="advance-steps">
                         <option value="1" selected>1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
                         <option value="4">4</option>
                         <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
                     </select>
                     <select id="advance-unit">
                         <option value="minutes" selected>Minutes</option>
                         <option value="hours">Hours</option>
                         <option value="days">Days</option>
                     </select>
-                    <button id="advance-sim">Advance Simulation</button>
-                    <button id="refresh-status">Refresh Status</button>
-                </div>
-                <div class="component-controls">
-                    <h3>Component Controls</h3>
-                    <div class="control-group">
-                        <label for="primary-pump-toggle">Primary Loop Pump:</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="primary-pump-toggle" class="toggle-input">
-                            <span class="toggle-slider"></span>
-                            <label for="primary-pump-toggle" class="toggle-label"></label>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label for="feedwater-pump-toggle">Feedwater Pump:</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="feedwater-pump-toggle" class="toggle-input">
-                            <span class="toggle-slider"></span>
-                            <label for="feedwater-pump-toggle" class="toggle-label"></label>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label for="feedheaters-toggle">Feedheaters:</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="feedheaters-toggle" class="toggle-input">
-                            <span class="toggle-slider"></span>
-                            <label for="feedheaters-toggle" class="toggle-label"></label>
-                        </div>
-                    </div>
+                    <button id="refresh-status" class="refresh-button">Refresh Status</button>
                 </div>
             </div>
         </div>
         <div class="full-width-column">
-            <h3>Operational Status</h3>
-            <div class="sim-details">
-                <p><strong>State:</strong> <span id="operational-state"></span></p>
-            </div>
+            <h3>Component Operational Status</h3>
             <div class="component-status">
-                <h3>Components</h3>
                 <div id="component-cards" class="simulations-grid">
                     <!-- Component cards will be dynamically inserted here -->
                 </div>
@@ -115,7 +127,6 @@
             document.getElementById('current-iteration').textContent = status.iterationNumber;
             document.getElementById('current-power-on').textContent = status.powerOn ? 'Yes' : 'No';
             document.getElementById('current-weather').textContent = status.weather || 'N/A';
-            document.getElementById('operational-state').textContent = status.running ? 'Running' : 'Stopped';
             updateComponentCards(status.components)
         }
 
@@ -204,6 +215,28 @@
             if (!activeSimId) return;
             const isChecked = document.getElementById('feedheaters-toggle').checked;
             fetch(`/api/sims/${activeSimId}/feedheaters/${isChecked ? 'on' : 'off'}`, {
+                method: 'PUT'
+            })
+                .then(response => response.json())
+                .then(status => updateStatus(status))
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('pressurizer-heater-toggle').addEventListener('change', () => {
+            if (!activeSimId) return;
+            const isChecked = document.getElementById('pressurizer-heater-toggle').checked;
+            fetch(`/api/sims/${activeSimId}/pressurizer/heater/${isChecked ? 'on' : 'off'}`, {
+                method: 'PUT'
+            })
+                .then(response => response.json())
+                .then(status => updateStatus(status))
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('pressurizer-spray-toggle').addEventListener('change', () => {
+            if (!activeSimId) return;
+            const isChecked = document.getElementById('pressurizer-spray-toggle').checked;
+            fetch(`/api/sims/${activeSimId}/pressurizer/spray-nozzle/${isChecked ? 'open' : 'close'}`, {
                 method: 'PUT'
             })
                 .then(response => response.json())

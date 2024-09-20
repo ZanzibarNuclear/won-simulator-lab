@@ -28,9 +28,9 @@ type SecondaryLoop struct {
 func NewSecondaryLoop(name string) *SecondaryLoop {
 	return &SecondaryLoop{
 		BaseComponent:        BaseComponent{Name: name},
-		steamTemperature:     100.0,
-		steamPressure:        1.0,
-		feedwaterFlowRate:    2.0, // 2 m³/s, 120 per minute
+		steamTemperature:     ROOM_TEMPERATURE,
+		steamPressure:        0.0,
+		feedwaterFlowRate:    0.0, // 2 m³/s, 120 per minute
 		feedwaterTemperature: BASE_FEEDWATER_TEMPERATURE,
 	}
 }
@@ -110,6 +110,7 @@ func (sl *SecondaryLoop) Status() map[string]interface{} {
 		"mainSteamSafetyValveOpened": sl.mainSteamSafetyValveOpened,
 		"feedwaterTemperature":       sl.feedwaterTemperature,
 		"feedwaterPumpOn":            sl.feedwaterPumpOn,
+		"feedwaterFlowRate":          sl.feedwaterFlowRate,
 		"feedwaterVolume":            sl.FeedwaterVolume(),
 		"feedwaterHeatersOn":         sl.feedheatersOn,
 	}
@@ -122,6 +123,7 @@ func (sl *SecondaryLoop) PrintStatus() {
 	fmt.Printf("\tMain Steam Safety Valve Released: %t\n", sl.mainSteamSafetyValveOpened)
 	fmt.Printf("\tFeedwater Temperature: %.2f °C\n", sl.feedwaterTemperature)
 	fmt.Printf("\tFeedwater Pump: %s\n", boolToString(sl.feedwaterPumpOn))
+	fmt.Printf("\tFeedwater Flow Rate: %.2f m³/s\n", sl.feedwaterFlowRate)
 	fmt.Printf("\tFeedwater Volume: %.2f m³/min\n", sl.FeedwaterVolume())
 	fmt.Printf("\tFeedwater Heaters: %s\n", boolToString(sl.feedheatersOn))
 }

@@ -12,6 +12,7 @@ type PrimaryLoop struct {
 	flowRate                 float64 // in m³/s
 	boronConcentration       float64 // in parts per million (ppm)
 	boronConcentrationTarget float64 // in parts per million (ppm)
+	pressurizer              *Pressurizer
 }
 
 // TODO: consider where to track hot / cold leg temperatures;
@@ -105,7 +106,7 @@ func (pl *PrimaryLoop) Status() map[string]interface{} {
 	return map[string]interface{}{
 		"name":                     pl.Name,
 		"pumpOn":                   pl.pumpOn,
-		"pressure":                 pl.Pressure(),
+		"pumpPressure":             pl.Pressure(),
 		"pressureUnit":             pl.PressureUnit(),
 		"flowVolume":               pl.FlowVolume(),
 		"flowVolumeUnit":           pl.FlowVolumeUnit(),
