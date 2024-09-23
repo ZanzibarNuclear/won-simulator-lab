@@ -27,7 +27,7 @@ const (
 // NewClock creates a new clock
 func NewClock(simStart time.Time) *SimClock {
 	return &SimClock{
-		Start: simStart,
+		Start: simStart.Truncate(time.Second),
 	}
 }
 
