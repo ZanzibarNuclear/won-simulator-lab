@@ -1,7 +1,6 @@
 package simworks
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -54,16 +53,15 @@ func (bc *BaseComponent) SetLatestMoment(t time.Time) {
 func (bc *BaseComponent) Status() map[string]interface{} {
 	// Implement the status retrieval logic for the component
 	return map[string]interface{}{
-		"ID":          bc.ID(),
-		"Name":        bc.Name(),
-		"Description": bc.Description(),
+		"ID":           bc.ID(),
+		"Name":         bc.Name(),
+		"Description":  bc.Description(),
+		"LatestMoment": bc.LatestMoment(),
 	}
 }
 
 func (bc *BaseComponent) Update(s *Simulator) (map[string]interface{}, error) {
 	// Implement the update logic for the component
-	fmt.Println("Update logic goes here for component:", bc.Name())
-	fmt.Println("Simulator time:", s.Clock.SimNow())
 	bc.SetLatestMoment(s.Clock.SimNow())
 	return bc.Status(), nil
 }

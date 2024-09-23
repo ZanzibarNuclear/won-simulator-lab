@@ -2,6 +2,7 @@ package simworks
 
 import (
 	"testing"
+	"time"
 )
 
 func TestBaseComponent(t *testing.T) {
@@ -33,6 +34,13 @@ func TestBaseComponent(t *testing.T) {
 		t.Errorf("Expected status to contain Description, got %v", status["Description"])
 	}
 
+	latestMoment, ok := status["LatestMoment"].(time.Time)
+	if !ok {
+		t.Error("Expected to find LatestMoment in status, but it was not found")
+	}
+	if !latestMoment.IsZero() {
+		t.Errorf("Expected LatestMoment to be zero before first update, got %v", latestMoment)
+	}
 }
 
 func TestBaseComponentUpdateChangesLatestMoment(t *testing.T) {
@@ -41,9 +49,22 @@ func TestBaseComponentUpdateChangesLatestMoment(t *testing.T) {
 	sim.AddComponent(bc)
 	sim.Step()
 
-	if bc.LatestMoment().IsZero() {
+	marker := bc.LatestMoment()
+	simNow := sim.Clock.SimNow()
+
+	if marker.IsZero() {
 		t.Errorf("Expected LatestMoment to be non-zero, got %v", bc.LatestMoment())
 	}
 
-	sim.Step()
+	if simNow != marker {
+		t.Errorf("SimNow should be in sync with LatestMoment, expected %v, got %v", marker, simNow)
+	}
+
+	sim.Run(90)
+	delta := bc.LatestMoment().Sub(marker)
+
+	if delta.Seconds() != 90 {
+		t.Errorf("Expected LatestMoment to be 90 seconds after first update, got %v", delta)
+	}
+
 }
