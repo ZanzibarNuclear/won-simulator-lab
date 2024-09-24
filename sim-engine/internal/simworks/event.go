@@ -25,6 +25,21 @@ func NewImmediateEvent(code string) Event {
 	}
 }
 
+func NewImmediateEventBool(code string, value bool) Event {
+	var targetValue float64
+	if value {
+		targetValue = 1.0
+	} else {
+		targetValue = 0.0
+	}
+	return Event{
+		Code:        code,
+		Status:      "pending",
+		Immediate:   true,
+		TargetValue: targetValue,
+	}
+}
+
 // NewAdjustmentEvent creates a new adjustment event with the given code and target value
 func NewAdjustmentEvent(code string, targetValue float64) Event {
 	return Event{
@@ -63,4 +78,9 @@ func (e *Event) SetPending() {
 
 func (e *Event) SetCanceled() {
 	e.Status = "canceled"
+}
+
+type EventHandler interface {
+	ProcessInstantEvent(e Event)
+	ProcessAdjustmentEvent(e Event)
 }

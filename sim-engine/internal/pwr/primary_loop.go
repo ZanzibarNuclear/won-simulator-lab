@@ -32,6 +32,11 @@ func NewPrimaryLoop(name string, description string) *PrimaryLoop {
 	}
 }
 
+const (
+	event_pl_pumpSwitch         = "primary_loop.cooling_pump.switch"
+	event_pl_boronConcentration = "primary_loop.cvcs.boron_concentration_target"
+)
+
 func (pl *PrimaryLoop) PumpOn() bool {
 	return pl.pumpOn
 }
@@ -108,62 +113,69 @@ func (pl *PrimaryLoop) Status() map[string]interface{} {
 func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, error) {
 	pl.BaseComponent.Update(s)
 
-	// TODO: use events to trigger changes - only need to set these values once per change
-	if pl.pumpOn {
-		// keep it simple for now. on full or off.
-		pl.pumpPressure = Config["primary_loop"]["pump_on_pressure"]
-		pl.pumpHeat = Config["primary_loop"]["pump_on_heat"]
-		pl.flowRate = Config["primary_loop"]["pump_on_flow_rate"]
+	// TODO: try to move this to BaseComponent
+	for i := range s.Events {
+		event := &s.Events[i]
+		if event.Status == "pending" && (s.Clock.SimNow().Equal(event.StartMoment) || s.Clock.SimNow().After(event.StartMoment)) {
+			event.Status = "in_progress"
+		}
 
-	} else {
-		// no pressure, no flow, no change to boron concentration
-		pl.pumpPressure = Config["primary_loop"]["pump_off_pressure"]
-		pl.flowRate = Config["primary_loop"]["pump_off_flow_rate"]
-		pl.pumpHeat = Config["primary_loop"]["pump_off_heat"]
-	}
-
-	// TODO: use events to trigger changes
-	if pl.flowRate > 0 {
-		// adjust boron concentration as needed
-		if pl.boronConcentrationTarget != pl.boronConcentration {
-			pl.boronConcentration = pl.boronConcentration + math.Copysign(
-				math.Min(
-					Config["primary_loop"]["max_boron_rate_of_change"],
-					math.Abs(pl.boronConcentrationTarget-pl.boronConcentration),
-				),
-				pl.boronConcentrationTarget-pl.boronConcentration,
-			)
+		if event.Status == "in_progress" {
+			if event.Immediate {
+				pl.processInstantEvent(event)
+			} else {
+				pl.processGradualEvent(event)
+			}
 		}
 	}
 
-	// Hot and cold leg temperatures depend on the core and steam generators.
-	// Hot leg temperature depends on heat output of core reactor and primary loop pump,
-	//   as well as how much water passes through the core.
-	// Cold leg temperature depends on steam generator heat transfer
-
-	// A good way to simplify might be to assume target values for each under
-	// "normal" conditions.
+	// TODO: add updates based on environment and other components
 
 	return pl.Status(), nil
 }
 
-// TODO: adopt Event-driven approach to system changes
+func (pl *PrimaryLoop) processInstantEvent(event *simworks.Event) {
+	switch event.Code {
+	case event_pl_pumpSwitch:
+		pl.switchPump(event.TargetValue > 0)
+		if pl.pumpOn {
+			pl.pumpPressure = Config["primary_loop"]["pump_on_pressure"]
+			pl.pumpHeat = Config["primary_loop"]["pump_on_heat"]
+			pl.flowRate = Config["primary_loop"]["pump_on_flow_rate"]
+		} else {
+			pl.pumpPressure = Config["primary_loop"]["pump_off_pressure"]
+			pl.pumpHeat = Config["primary_loop"]["pump_off_heat"]
+			pl.flowRate = Config["primary_loop"]["pump_off_flow_rate"]
+		}
+	}
+	event.Status = "completed"
+}
 
-// func (pl *PrimaryLoop) SwitchOnPump() {
-// 	pl.pumpOn = true
-// }
+func (pl *PrimaryLoop) processGradualEvent(event *simworks.Event) {
+	targetValue := event.TargetValue
+	switch event.Code {
+	case event_pl_boronConcentration:
+		pl.adjustBoron(targetValue)
+		if pl.boronConcentration == targetValue {
+			event.Status = "completed"
+		}
+	}
+}
 
-// func (pl *PrimaryLoop) SwitchOffPump() {
-// 	pl.pumpOn = false
-// }
+func (pl *PrimaryLoop) adjustBoron(targetValue float64) {
+	if pl.pumpOn {
+		if pl.boronConcentration != targetValue {
+			pl.boronConcentration = pl.boronConcentration + math.Copysign(
+				math.Min(
+					Config["primary_loop"]["max_boron_rate_of_change"],
+					math.Abs(targetValue-pl.boronConcentration),
+				),
+				targetValue-pl.boronConcentration,
+			)
+		}
+	}
+}
 
-// // set target amount in ppm
-// // the system will approach this target concentration over time
-// // no change happens while pump is off
-// func (pl *PrimaryLoop) AdjustBoronConcentrationTarget(amount float64) {
-// 	if amount < 0 {
-// 		fmt.Printf("Boron concentration cannot be negative. You requested %f %s.\n", amount, pl.BoronConcentrationUnit())
-// 		return
-// 	}
-// 	pl.boronConcentrationTarget = amount
-// }
+func (pl *PrimaryLoop) switchPump(on bool) {
+	pl.pumpOn = on
+}

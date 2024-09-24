@@ -14,6 +14,7 @@ type Simulator struct {
 	Environment    *Environment
 	Components     []SimComponent
 	ComponentIndex map[string]SimComponent
+	Events         []Event
 }
 
 // NewSimulator creates a new simulator
@@ -27,6 +28,7 @@ func NewSimulator(name, purpose string) *Simulator {
 		Environment:    NewEnvironment(),
 		Components:     []SimComponent{},
 		ComponentIndex: make(map[string]SimComponent),
+		Events:         []Event{},
 	}
 }
 
@@ -51,4 +53,8 @@ func (s *Simulator) RunForABit(days, hours, minutes, seconds int) {
 func (s *Simulator) AddComponent(c SimComponent) {
 	s.Components = append(s.Components, c)
 	s.ComponentIndex[c.ID()] = c
+}
+
+func (s *Simulator) QueueEvent(e Event) {
+	s.Events = append(s.Events, e)
 }
