@@ -132,7 +132,7 @@ func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, er
 		}
 	}
 
-	// TODO: add updates based on environment and other components
+	// TODO: update hot and cold legs core temperature and steam generator outlet temperature
 
 	return pl.Status(), nil
 }
@@ -166,6 +166,10 @@ func (pl *PrimaryLoop) processGradualEvent(event *simworks.Event) {
 	}
 }
 
+func (pl *PrimaryLoop) switchPump(on bool) {
+	pl.pumpOn = on
+}
+
 func (pl *PrimaryLoop) adjustBoron(targetValue float64) {
 	if pl.pumpOn {
 		if pl.boronConcentration != targetValue {
@@ -178,8 +182,4 @@ func (pl *PrimaryLoop) adjustBoron(targetValue float64) {
 			)
 		}
 	}
-}
-
-func (pl *PrimaryLoop) switchPump(on bool) {
-	pl.pumpOn = on
 }

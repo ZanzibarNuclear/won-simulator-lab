@@ -34,12 +34,16 @@ func NewSimulator(name, purpose string) *Simulator {
 }
 
 func (s *Simulator) Run(seconds int) {
+	results := make(map[string]interface{})
 	for i := 0; i < seconds; i++ {
 		s.Clock.Tick()
 		for _, component := range s.Components {
-			component.Update(s)
+			status, _ := component.Update(s)
+			results[component.ID()] = status
 		}
 	}
+	results["general"] = "TODO"
+	// TODO: decide what to do with results - that's a lot of data
 }
 
 func (s *Simulator) Step() {
