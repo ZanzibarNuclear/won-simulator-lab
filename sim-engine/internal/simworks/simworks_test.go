@@ -5,14 +5,14 @@ import (
 )
 
 func TestSimWorks(t *testing.T) {
-	s := NewSimulator("Test Simulator", "Test Simulator", "Test Simulator")
+	s := NewSimulator("Tess the Tester", "Test Simulator")
 
-	if s.ID != "Test Simulator" {
-		t.Errorf("Expected ID to be 'Test Simulator', got %s", s.ID)
+	if len(s.ID) != 8 {
+		t.Errorf("Expected ID to be 8 characters, got %s", s.ID)
 	}
 
-	if s.Name != "Test Simulator" {
-		t.Errorf("Expected Name to be 'Test Simulator', got %s", s.Name)
+	if s.Name != "Tess the Tester" {
+		t.Errorf("Expected Name to be 'Tess the Tester', got %s", s.Name)
 	}
 
 	if s.Purpose != "Test Simulator" {
@@ -31,4 +31,11 @@ func TestSimWorks(t *testing.T) {
 		t.Errorf("Expected Environment to be non-nil, got %v", s.Environment)
 	}
 
+	if len(s.Components) != 0 {
+		t.Errorf("Expected Components to be empty, got %v", s.Components)
+	}
+
+	if len(s.ComponentIndex) != 0 {
+		t.Errorf("Expected ComponentIndex to be empty, got %v", s.ComponentIndex)
+	}
 }

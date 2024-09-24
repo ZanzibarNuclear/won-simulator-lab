@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	sim := simworks.NewSimulator("1", "Simulator Works", "The inner workings to support simulations")
+	sim := simworks.NewSimulator("Simulator Works", "The inner workings to support simulations")
 	fmt.Printf("Starting SimTime: %v\n", sim.Clock.FormatNow())
 	sim.RunForABit(0, 0, 1, 0)
 	fmt.Printf("After 1 minute SimTime: %v\n", sim.Clock.FormatNow())

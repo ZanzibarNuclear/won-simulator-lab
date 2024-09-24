@@ -45,7 +45,7 @@ func TestBaseComponent(t *testing.T) {
 
 func TestBaseComponentUpdateChangesLatestMoment(t *testing.T) {
 	bc := NewBaseComponent("Test Component", "Test Description")
-	sim := NewSimulator("Test Simulator", "Test Simulator", "Test Simulator")
+	sim := NewSimulator("Simulator Test", "Test Simulator")
 	sim.AddComponent(bc)
 	sim.Step()
 

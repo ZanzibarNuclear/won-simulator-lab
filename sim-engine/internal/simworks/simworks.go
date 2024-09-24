@@ -17,9 +17,9 @@ type Simulator struct {
 }
 
 // NewSimulator creates a new simulator
-func NewSimulator(id, name, purpose string) *Simulator {
+func NewSimulator(name, purpose string) *Simulator {
 	return &Simulator{
-		ID:             id,
+		ID:             GenerateRandomID(8),
 		Name:           name,
 		Purpose:        purpose,
 		CreationDate:   time.Now(),
