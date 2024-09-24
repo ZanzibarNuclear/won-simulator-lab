@@ -1,6 +1,7 @@
 package simworks
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type SimComponent interface {
 	Name() string
 	Description() string
 	Status() map[string]interface{}
+	Print()
 	Update(s *Simulator) (map[string]interface{}, error)
 }
 
@@ -58,6 +60,10 @@ func (bc *BaseComponent) Status() map[string]interface{} {
 		"Description":  bc.Description(),
 		"LatestMoment": bc.LatestMoment(),
 	}
+}
+
+func (bc *BaseComponent) Print() {
+	fmt.Printf("\t%s (ID %s)\n%s\nLatest update: %s\n", bc.Name(), bc.ID(), bc.Description(), bc.LatestMoment().Format("2006-01-02 15:04:05"))
 }
 
 func (bc *BaseComponent) Update(s *Simulator) (map[string]interface{}, error) {

@@ -9,27 +9,25 @@ import (
 
 type PrimaryLoop struct {
 	simworks.BaseComponent
-	pumpOn                   bool
-	pumpPressure             float64 // in MPa
-	flowRate                 float64 // in m³/s
-	pumpHeat                 float64 // in MW
-	boronConcentration       float64 // in parts per million (ppm)
-	boronConcentrationTarget float64 // in parts per million (ppm)
-	hotLegTemperature        float64 // in Celsius
-	coldLegTemperature       float64 // in Celsius
+	pumpOn             bool
+	pumpPressure       float64 // in MPa
+	flowRate           float64 // in m³/s
+	pumpHeat           float64 // in MW
+	boronConcentration float64 // in parts per million (ppm)
+	hotLegTemperature  float64 // in Celsius
+	coldLegTemperature float64 // in Celsius
 }
 
 func NewPrimaryLoop(name string, description string) *PrimaryLoop {
 	return &PrimaryLoop{
-		BaseComponent:            *simworks.NewBaseComponent(name, description),
-		pumpOn:                   false,
-		pumpPressure:             0.0,
-		flowRate:                 0.0,
-		pumpHeat:                 0.0,
-		boronConcentration:       0.0,
-		boronConcentrationTarget: 0.0,
-		hotLegTemperature:        Config["common"]["room_temperature"],
-		coldLegTemperature:       Config["common"]["room_temperature"],
+		BaseComponent:      *simworks.NewBaseComponent(name, description),
+		pumpOn:             false,
+		pumpPressure:       0.0,
+		flowRate:           0.0,
+		pumpHeat:           0.0,
+		boronConcentration: 0.0,
+		hotLegTemperature:  Config["common"]["room_temperature"],
+		coldLegTemperature: Config["common"]["room_temperature"],
 	}
 }
 
@@ -70,10 +68,6 @@ func (pl *PrimaryLoop) BoronConcentrationUnit() string {
 	return "ppm"
 }
 
-func (pl *PrimaryLoop) BoronConcentrationTarget() float64 {
-	return pl.boronConcentrationTarget
-}
-
 func (pl *PrimaryLoop) HotLegTemperature() float64 {
 	return pl.hotLegTemperature
 }
@@ -88,22 +82,33 @@ func (pl *PrimaryLoop) ColdLegTemperature() float64 {
 
 func (pl *PrimaryLoop) Status() map[string]interface{} {
 	return map[string]interface{}{
-		"about":                    pl.BaseComponent.Status(),
-		"pumpOn":                   pl.PumpOn(),
-		"pumpPressure":             pl.PumpPressure(),
-		"pumpPressureUnit":         pl.PumpPressureUnit(),
-		"pumpHeat":                 pl.PumpHeat(),
-		"pumpHeatUnit":             pl.PumpHeatUnit(),
-		"flowRate":                 pl.FlowRate(),
-		"flowRateUnit":             pl.FlowRateUnit(),
-		"boronConcentration":       pl.BoronConcentration(),
-		"boronConcentrationTarget": pl.BoronConcentrationTarget(),
-		"boronConcentrationUnit":   pl.BoronConcentrationUnit(),
-		"hotLegTemperature":        pl.HotLegTemperature(),
-		"hotLegTemperatureUnit":    pl.TemperatureUnit(),
-		"coldLegTemperature":       pl.ColdLegTemperature(),
-		"coldLegTemperatureUnit":   pl.TemperatureUnit(),
+		"about":                  pl.BaseComponent.Status(),
+		"pumpOn":                 pl.PumpOn(),
+		"pumpPressure":           pl.PumpPressure(),
+		"pumpPressureUnit":       pl.PumpPressureUnit(),
+		"pumpHeat":               pl.PumpHeat(),
+		"pumpHeatUnit":           pl.PumpHeatUnit(),
+		"flowRate":               pl.FlowRate(),
+		"flowRateUnit":           pl.FlowRateUnit(),
+		"boronConcentration":     pl.BoronConcentration(),
+		"boronConcentrationUnit": pl.BoronConcentrationUnit(),
+		"hotLegTemperature":      pl.HotLegTemperature(),
+		"hotLegTemperatureUnit":  pl.TemperatureUnit(),
+		"coldLegTemperature":     pl.ColdLegTemperature(),
+		"coldLegTemperatureUnit": pl.TemperatureUnit(),
 	}
+}
+
+func (pl *PrimaryLoop) Print() {
+	fmt.Printf("=> Primary Loop\n")
+	pl.BaseComponent.Print()
+	fmt.Printf("Pump on: %v\n", pl.PumpOn())
+	fmt.Printf("Pump pressure: %.2f %s\n", pl.PumpPressure(), pl.PumpPressureUnit())
+	fmt.Printf("Pump heat: %.2f %s\n", pl.PumpHeat(), pl.PumpHeatUnit())
+	fmt.Printf("Flow rate: %.2f %s\n", pl.FlowRate(), pl.FlowRateUnit())
+	fmt.Printf("Boron concentration: %.2f %s\n", pl.BoronConcentration(), pl.BoronConcentrationUnit())
+	fmt.Printf("Hot leg temperature: %.1f %s\n", pl.HotLegTemperature(), pl.TemperatureUnit())
+	fmt.Printf("Cold leg temperature: %.1f %s\n", pl.ColdLegTemperature(), pl.TemperatureUnit())
 }
 
 func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, error) {

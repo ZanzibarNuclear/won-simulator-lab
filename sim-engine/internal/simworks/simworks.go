@@ -1,6 +1,7 @@
 package simworks
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -61,4 +62,11 @@ func (s *Simulator) AddComponent(c SimComponent) {
 
 func (s *Simulator) QueueEvent(e Event) {
 	s.Events = append(s.Events, e)
+}
+
+func (s *Simulator) PrintStatus() {
+	fmt.Printf("=== Simulator %s is running. ===\n  %s\n\n", s.Name, s.Purpose)
+	for _, component := range s.Components {
+		component.Print()
+	}
 }
