@@ -1,5 +1,6 @@
 package pwr
 
+// physical constants and typical operational settings
 const (
 	ROOM_TEMPERATURE = 20.0 // in Celsius
 
@@ -30,3 +31,9 @@ var Config = map[string]map[string]float64{
 		"room_temperature": ROOM_TEMPERATURE,
 	},
 }
+
+// event codes
+const (
+	event_pl_pumpSwitch         = "primary_loop.cooling_pump.switch"
+	event_pl_boronConcentration = "primary_loop.cvcs.boron_concentration_target"
+)

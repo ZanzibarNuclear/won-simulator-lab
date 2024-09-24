@@ -32,11 +32,6 @@ func NewPrimaryLoop(name string, description string) *PrimaryLoop {
 	}
 }
 
-const (
-	event_pl_pumpSwitch         = "primary_loop.cooling_pump.switch"
-	event_pl_boronConcentration = "primary_loop.cvcs.boron_concentration_target"
-)
-
 func (pl *PrimaryLoop) PumpOn() bool {
 	return pl.pumpOn
 }
