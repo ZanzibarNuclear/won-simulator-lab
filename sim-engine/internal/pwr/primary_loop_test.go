@@ -31,7 +31,7 @@ func TestPumpSwitch(t *testing.T) {
 	pl := NewPrimaryLoop("TestLoop-Pump", "The is a test.")
 	sim := simworks.NewSimulator("Test Sim", "Test Sim")
 	sim.AddComponent(pl)
-	sim.QueueEvent(simworks.NewImmediateEventBool(event_pl_pumpSwitch, true))
+	sim.QueueEvent(simworks.NewImmediateEventBool(Event_pl_pumpSwitch, true))
 	sim.Run(1)
 	// pump should be running with side effects
 	if !pl.PumpOn() {
@@ -47,7 +47,7 @@ func TestPumpSwitch(t *testing.T) {
 		t.Errorf("Expected pump heat to be %v, got %v", Config["primary_loop"]["pump_on_heat"], pl.PumpHeat())
 	}
 
-	sim.QueueEvent(simworks.NewImmediateEventBool(event_pl_pumpSwitch, false))
+	sim.QueueEvent(simworks.NewImmediateEventBool(Event_pl_pumpSwitch, false))
 	sim.Run(1)
 	// pump should be off, related values at low state
 	if pl.PumpOn() {
@@ -70,16 +70,32 @@ func TestAdjustBoronConcentration(t *testing.T) {
 	sim.AddComponent(pl)
 
 	// turn on pump and establish boron concentration target
-	sim.QueueEvent(simworks.NewImmediateEventBool(event_pl_pumpSwitch, true))
-	boronEvent := simworks.NewAdjustmentEvent(event_pl_boronConcentration, 1000.0)
+	sim.QueueEvent(simworks.NewImmediateEventBool(Event_pl_pumpSwitch, true))
+	boronEvent := simworks.NewAdjustmentEvent(Event_pl_boronConcentration, 300.0)
 	sim.QueueEvent(boronEvent)
+	eventToWatch := &sim.Events[1]
+
+	if !eventToWatch.IsPending() {
+		t.Errorf("Expected event to be pending, got %v", eventToWatch.Status)
+	}
+
 	sim.Run(2)
 
-	if boronEvent.Status != "in_progress" {
-		t.Errorf("Expected boron concentration event to be 'in progress', got '%v'", boronEvent.Status)
+	if eventToWatch.Code != Event_pl_boronConcentration {
+		t.Errorf("Expected event to be %v, got %v", Event_pl_boronConcentration, eventToWatch.Code)
 	}
-	// boron concentration should be 1000
-	if pl.BoronConcentration() == 0.0 {
-		t.Errorf("Expected boron concentration to be above 0, got %v", pl.BoronConcentration())
+	if !eventToWatch.IsInProgress() {
+		t.Errorf("Expected event to be in progress, got %v", eventToWatch.Status)
+	}
+
+	// let 2 hours pass
+	sim.RunForABit(0, 2, 0, 0)
+
+	// check that the boron concentration has changed
+	if pl.BoronConcentration() != 300.0 {
+		t.Errorf("Expected boron concentration to be %v, got %v", 300.0, pl.BoronConcentration())
+	}
+	if !eventToWatch.IsComplete() {
+		t.Errorf("Expected event to be complete, got %v", eventToWatch.Status)
 	}
 }

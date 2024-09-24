@@ -34,6 +34,6 @@ var Config = map[string]map[string]float64{
 
 // event codes
 const (
-	event_pl_pumpSwitch         = "primary_loop.cooling_pump.switch"
-	event_pl_boronConcentration = "primary_loop.cvcs.boron_concentration_target"
+	Event_pl_pumpSwitch         = "primary_loop.cooling_pump.switch"
+	Event_pl_boronConcentration = "primary_loop.cvcs.boron_concentration_target"
 )

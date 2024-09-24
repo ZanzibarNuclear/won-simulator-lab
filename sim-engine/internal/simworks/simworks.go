@@ -45,6 +45,10 @@ func (s *Simulator) Step() {
 	s.Run(1)
 }
 
+func (s *Simulator) CurrentMoment() time.Time {
+	return s.Clock.SimNow()
+}
+
 func (s *Simulator) RunForABit(days, hours, minutes, seconds int) {
 	duration := days*ONE_DAY_IN_SECONDS + hours*ONE_HOUR_IN_SECONDS + minutes*ONE_MINUTE_IN_SECONDS + seconds
 	s.Run(duration)

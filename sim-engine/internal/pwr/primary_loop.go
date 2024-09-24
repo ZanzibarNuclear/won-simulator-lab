@@ -1,6 +1,7 @@
 package pwr
 
 import (
+	"fmt"
 	"math"
 
 	"worldofnuclear.com/internal/simworks"
@@ -111,11 +112,13 @@ func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, er
 	// TODO: try to move this to BaseComponent
 	for i := range s.Events {
 		event := &s.Events[i]
-		if event.Status == "pending" && (s.Clock.SimNow().Equal(event.StartMoment) || s.Clock.SimNow().After(event.StartMoment)) {
-			event.Status = "in_progress"
+		if event.IsPending() {
+			if event.IsDue(s.CurrentMoment()) {
+				event.SetInProgress()
+			}
 		}
 
-		if event.Status == "in_progress" {
+		if event.IsInProgress() {
 			if event.Immediate {
 				pl.processInstantEvent(event)
 			} else {
@@ -131,8 +134,8 @@ func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, er
 
 func (pl *PrimaryLoop) processInstantEvent(event *simworks.Event) {
 	switch event.Code {
-	case event_pl_pumpSwitch:
-		pl.switchPump(event.TargetValue > 0)
+	case Event_pl_pumpSwitch:
+		pl.switchPump(event.Truthy())
 		if pl.pumpOn {
 			pl.pumpPressure = Config["primary_loop"]["pump_on_pressure"]
 			pl.pumpHeat = Config["primary_loop"]["pump_on_heat"]
@@ -143,16 +146,17 @@ func (pl *PrimaryLoop) processInstantEvent(event *simworks.Event) {
 			pl.flowRate = Config["primary_loop"]["pump_off_flow_rate"]
 		}
 	}
-	event.Status = "completed"
+	event.SetComplete()
 }
 
 func (pl *PrimaryLoop) processGradualEvent(event *simworks.Event) {
 	targetValue := event.TargetValue
 	switch event.Code {
-	case event_pl_boronConcentration:
+	case Event_pl_boronConcentration:
 		pl.adjustBoron(targetValue)
 		if pl.boronConcentration == targetValue {
-			event.Status = "completed"
+			event.SetComplete()
+			fmt.Printf("Boron concentration adjusted to %v\n", pl.boronConcentration)
 		}
 	}
 }

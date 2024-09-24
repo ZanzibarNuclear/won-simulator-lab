@@ -2,27 +2,37 @@ package main
 
 import (
 	"fmt"
-	"time"
 
+	"worldofnuclear.com/internal/pwr"
 	"worldofnuclear.com/internal/simworks"
 )
 
 func main() {
 	sim := simworks.NewSimulator("Simulator Works", "The inner workings to support simulations")
-	fmt.Printf("Starting SimTime: %v\n", sim.Clock.FormatNow())
-	sim.RunForABit(0, 0, 1, 0)
-	fmt.Printf("After 1 minute SimTime: %v\n", sim.Clock.FormatNow())
-	sim.RunForABit(0, 6, 0, 0)
-	fmt.Printf("After 6 hours SimTime: %v\n", sim.Clock.FormatNow())
-	fmt.Println("Running for a few days")
-	sim.RunForABit(2, 0, 0, 0)
-	fmt.Printf("After 2 days SimTime: %v\n", sim.Clock.FormatNow())
+	pl := pwr.NewPrimaryLoop("TestLoop-Pump", "The is a test.")
+	sim.AddComponent(pl)
+	sim.RunForABit(0, 0, 1, 30)
 
-	fmt.Println("Running for a few days in own thread")
-	go sim.RunForABit(3, 9, 12, 42)
+	pumpOn := simworks.NewImmediateEventBool(pwr.Event_pl_pumpSwitch, true)
+	sim.QueueEvent(pumpOn)
+	sim.Step()
 
-	time.Sleep(5 * time.Second)
-	fmt.Printf("After 3 days, 9 hours, 12 minute, 42 second SimTime: %v\n", sim.Clock.FormatNow())
-	fmt.Println("All done.")
+	if !pl.PumpOn() {
+		fmt.Println("Pump is not on. Boo hoo.")
+	}
 
+	targetBoron := 300.0
+	addBoron := simworks.NewAdjustmentEvent(pwr.Event_pl_boronConcentration, targetBoron)
+	sim.QueueEvent(addBoron)
+
+	sim.Run(1) // should pick up event; will need some time to complete
+
+	for i := 0; i < 4 && !addBoron.IsComplete(); i++ {
+		sim.RunForABit(0, 0, 30, 0)
+		fmt.Printf("%s Boron concentration: %f\n", sim.CurrentMoment(), pl.BoronConcentration())
+	}
+
+	if pl.BoronConcentration() != targetBoron {
+		fmt.Printf("Boron concentration did not reach target: %f. Boo hoo: %f.\n", targetBoron, pl.BoronConcentration())
+	}
 }

@@ -68,16 +68,49 @@ func (e *Event) SetComplete() {
 	e.Status = "completed"
 }
 
+func (e *Event) IsComplete() bool {
+	return e.Status == "completed"
+}
+
 func (e *Event) SetInProgress() {
 	e.Status = "in_progress"
+}
+
+func (e *Event) IsInProgress() bool {
+	return e.Status == "in_progress"
 }
 
 func (e *Event) SetPending() {
 	e.Status = "pending"
 }
 
+func (e *Event) IsPending() bool {
+	return e.Status == "pending"
+}
+
 func (e *Event) SetCanceled() {
 	e.Status = "canceled"
+}
+
+func (e *Event) IsCanceled() bool {
+	return e.Status == "canceled"
+}
+
+func (e *Event) IsScheduled() bool {
+	return !e.StartMoment.IsZero()
+}
+
+func (e *Event) IsDue(moment time.Time) bool {
+	if !e.IsScheduled() {
+		return true
+	} else if moment.Equal(e.StartMoment) || moment.After(e.StartMoment) {
+		return true
+	}
+	return false
+}
+
+func (e *Event) Truthy() bool {
+	return e.TargetValue != 0
 }
 
 type EventHandler interface {
