@@ -21,11 +21,6 @@ type PrimaryLoop struct {
 func NewPrimaryLoop(name string, description string) *PrimaryLoop {
 	return &PrimaryLoop{
 		BaseComponent:      *simworks.NewBaseComponent(name, description),
-		pumpOn:             false,
-		pumpPressure:       0.0,
-		flowRate:           0.0,
-		pumpHeat:           0.0,
-		boronConcentration: 0.0,
 		hotLegTemperature:  Config["common"]["room_temperature"],
 		coldLegTemperature: Config["common"]["room_temperature"],
 	}
