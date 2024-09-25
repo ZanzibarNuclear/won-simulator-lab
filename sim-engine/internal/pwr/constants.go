@@ -54,9 +54,3 @@ var Config = map[string]map[string]float64{
 	"primary_loop": PrimaryLoopConfig,
 	"pressurizer":  PressurizerConfig,
 }
-
-// event codes
-const (
-	Event_pl_pumpSwitch         = "primary_loop.cooling_pump.switch"
-	Event_pl_boronConcentration = "primary_loop.cvcs.boron_concentration_target"
-)

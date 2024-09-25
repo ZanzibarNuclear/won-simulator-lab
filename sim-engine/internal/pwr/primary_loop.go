@@ -156,7 +156,6 @@ func (pl *PrimaryLoop) processGradualEvent(event *simworks.Event) {
 		pl.adjustBoron(targetValue)
 		if pl.boronConcentration == targetValue {
 			event.SetComplete()
-			fmt.Printf("Boron concentration adjusted to %v\n", pl.boronConcentration)
 		}
 	}
 }
