@@ -31,7 +31,7 @@ func TestPumpSwitch(t *testing.T) {
 	pl := NewPrimaryLoop("TestLoop-Pump", "The is a test.")
 	sim := simworks.NewSimulator("Test Sim", "Test Sim")
 	sim.AddComponent(pl)
-	sim.QueueEvent(NewPumpSwitchEvent(true))
+	sim.QueueEvent(NewEvent_PumpSwitch(true))
 	sim.Step()
 	if !pl.PumpOn() {
 		t.Errorf("Expected pump to be on, got %v", pl.PumpOn())
@@ -46,7 +46,7 @@ func TestPumpSwitch(t *testing.T) {
 		t.Errorf("Expected pump heat to be %v, got %v", Config["primary_loop"]["pump_on_heat"], pl.PumpHeat())
 	}
 
-	sim.QueueEvent(NewPumpSwitchEvent(false))
+	sim.QueueEvent(NewEvent_PumpSwitch(false))
 	sim.Step()
 	if pl.PumpOn() {
 		t.Errorf("Expected pump to be off, got %v", pl.PumpOn())
@@ -68,9 +68,9 @@ func TestAdjustBoronConcentration(t *testing.T) {
 	sim.AddComponent(pl)
 
 	// turn on pump and establish boron concentration target
-	sim.QueueEvent(NewPumpSwitchEvent(true))
+	sim.QueueEvent(NewEvent_PumpSwitch(true))
 	boronTarget := 300.0
-	sim.QueueEvent(NewBoronConcentrationEvent(boronTarget))
+	sim.QueueEvent(NewEvent_BoronConcentration(boronTarget))
 	eventToWatch := &sim.Events[1]
 
 	if !eventToWatch.IsPending() {
@@ -113,7 +113,7 @@ func TestBoronConcentrationWhenPumpInitiallyOff(t *testing.T) {
 
 	// Try to adjust boron concentration
 	boronTarget := 50.0
-	sim.QueueEvent(NewBoronConcentrationEvent(boronTarget))
+	sim.QueueEvent(NewEvent_BoronConcentration(boronTarget))
 	sim.RunForABit(0, 0, 1, 0) // Run for 1 minute
 
 	// Check that boron concentration hasn't changed
@@ -127,7 +127,7 @@ func TestBoronConcentrationWhenPumpInitiallyOff(t *testing.T) {
 		t.Errorf("Expected boron adjustment event to be in progress, but got status: %v", eventToWatch.Status)
 	}
 
-	sim.QueueEvent(NewPumpSwitchEvent(true))
+	sim.QueueEvent(NewEvent_PumpSwitch(true))
 	sim.Step()
 	if !pl.PumpOn() {
 		t.Errorf("Expected pump to be on, got %v", pl.PumpOn())

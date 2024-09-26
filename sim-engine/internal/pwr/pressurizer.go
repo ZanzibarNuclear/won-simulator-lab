@@ -181,7 +181,6 @@ func (p *Pressurizer) adjustPressure(targetValue float64) {
 		}
 
 		if p.HeaterOnHigh() {
-			// FIXME: why isn't temperature going up?
 			p.temperature += 1.0
 		}
 	} else {
