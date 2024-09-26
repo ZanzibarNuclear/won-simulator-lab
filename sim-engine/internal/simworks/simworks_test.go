@@ -1,6 +1,7 @@
 package simworks
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -38,4 +39,54 @@ func TestSimWorks(t *testing.T) {
 	if len(s.ComponentIndex) != 0 {
 		t.Errorf("Expected ComponentIndex to be empty, got %v", s.ComponentIndex)
 	}
+}
+
+const (
+	Event_ignore    = "ignore-this-event"
+	Event_count     = "count-this-event"
+	Event_times_ten = "times-ten-this-event"
+)
+
+type EventHandlerThingy struct {
+	count int
+}
+
+func (e *EventHandlerThingy) ProcessEvent(event *Event) {
+	switch event.Code {
+	case Event_count:
+		e.count++
+		event.SetComplete()
+	case Event_times_ten:
+		e.count *= 10
+		event.SetComplete()
+	}
+}
+
+func TestSimulator_EventHandling(t *testing.T) {
+	s := NewSimulator("Tess the Tester", "Test Simulator")
+
+	handler := &EventHandlerThingy{}
+	s.SetEventHandler(handler)
+
+	s.QueueEvent(NewImmediateEvent(Event_count))
+	s.QueueEvent(NewImmediateEvent(Event_ignore))
+	s.QueueEvent(NewImmediateEvent(Event_count))
+	s.QueueEvent(NewImmediateEvent(Event_times_ten))
+
+	s.Step()
+
+	if handler.count != 20 {
+		t.Errorf("Expected count to be 20, got %d", handler.count)
+	}
+
+	if len(s.Events) != 1 {
+		t.Errorf("Expected one unprocessed event, got %v", s.Events)
+	}
+
+	if len(s.InactiveEvents) != 3 {
+		t.Errorf("Expected 3 inactive events, got %d", len(s.InactiveEvents))
+	}
+
+	fmt.Printf("Events: %v\n", s.Events)
+	fmt.Printf("Inactive Events: %v\n", s.InactiveEvents)
 }

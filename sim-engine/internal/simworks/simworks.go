@@ -16,6 +16,8 @@ type Simulator struct {
 	Components     []SimComponent
 	ComponentIndex map[string]SimComponent
 	Events         []Event
+	InactiveEvents []Event
+	EventHandler   EventHandler
 }
 
 // NewSimulator creates a new simulator
@@ -30,7 +32,13 @@ func NewSimulator(name, purpose string) *Simulator {
 		Components:     []SimComponent{},
 		ComponentIndex: make(map[string]SimComponent),
 		Events:         []Event{},
+		InactiveEvents: []Event{},
 	}
+}
+
+// SetEventHandler sets the event handler for the simulator
+func (s *Simulator) SetEventHandler(handler EventHandler) {
+	s.EventHandler = handler
 }
 
 func (s *Simulator) Run(seconds int) {
@@ -43,6 +51,9 @@ func (s *Simulator) Run(seconds int) {
 		}
 	}
 
+	if s.EventHandler != nil {
+		s.ReviewPendingEvents()
+	}
 	s.TidyUpEvents()
 
 	results["general"] = "TODO"
@@ -53,8 +64,26 @@ func (s *Simulator) Step() {
 	s.Run(1)
 }
 
-func (s *Simulator) TidyUpEvents() {
+func (s *Simulator) ReviewPendingEvents() {
+	for _, event := range s.Events {
+		if event.IsPending() && event.IsDue(s.CurrentMoment()) {
+			s.EventHandler.ProcessEvent(&event)
+		}
+	}
+}
 
+func (s *Simulator) TidyUpEvents() {
+	n := 0
+	for _, event := range s.Events {
+		fmt.Printf("Event status: %s\n", event.Status)
+		if event.IsComplete() || event.IsCanceled() {
+			s.InactiveEvents = append(s.InactiveEvents, event)
+		} else {
+			s.Events[n] = event
+			n++
+		}
+	}
+	s.Events = s.Events[:n]
 }
 
 func (s *Simulator) CurrentMoment() time.Time {

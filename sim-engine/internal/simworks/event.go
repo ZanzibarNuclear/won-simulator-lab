@@ -4,7 +4,7 @@ import "time"
 
 type Event struct {
 	Code        string        // key to identify the event
-	Status      string        // "pending", "in_progress", or "completed"
+	Status      string        // "pending", "in_progress", "completed", or "canceled"
 	Immediate   bool          // for changes that happen in a single tick
 	StartMoment time.Time     // to schedule a future event
 	Duration    time.Duration // positive for events that have a defined duration; negative not allowed
@@ -134,6 +134,5 @@ func (e *Event) Truthy() bool {
 }
 
 type EventHandler interface {
-	ProcessInstantEvent(e Event)
-	ProcessAdjustmentEvent(e Event)
+	ProcessEvent(e *Event)
 }

@@ -1,6 +1,8 @@
 package pwr
 
 import (
+	"fmt"
+
 	"worldofnuclear.com/internal/simworks"
 )
 
@@ -24,4 +26,12 @@ func (s *PwrSim) SetupStandardComponents() {
 func (s *PwrSim) PrintStatus() {
 	s.Simulator.PrintStatus()
 	println("\n--- Like we always say: ", s.motto, " ---")
+}
+
+func (s *PwrSim) ProcessEvent(event simworks.Event) {
+
+	switch event.Code {
+	case Event_pr_reliefValveVent:
+		fmt.Println("The pressurizer relief valve was triggered and is venting.")
+	}
 }
