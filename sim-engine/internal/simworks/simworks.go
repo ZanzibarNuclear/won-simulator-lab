@@ -42,12 +42,19 @@ func (s *Simulator) Run(seconds int) {
 			results[component.ID()] = status
 		}
 	}
+
+	s.TidyUpEvents()
+
 	results["general"] = "TODO"
 	// TODO: decide what to do with results - that's a lot of data
 }
 
 func (s *Simulator) Step() {
 	s.Run(1)
+}
+
+func (s *Simulator) TidyUpEvents() {
+
 }
 
 func (s *Simulator) CurrentMoment() time.Time {

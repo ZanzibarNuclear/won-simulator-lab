@@ -92,6 +92,9 @@ func TestSprayNozzleEvent(t *testing.T) {
 	if !p.SprayNozzleOpen() {
 		t.Error("Expected spray nozzle to be open after the event")
 	}
+	if p.SprayFlowRate() == 0.0 {
+		t.Error("Expected spray flow rate to be non-zero when nozzle is open")
+	}
 	if !eventToWatch.IsComplete() {
 		t.Error("SprayNozzleEvent should be completed after one step")
 	}
@@ -109,6 +112,9 @@ func TestSprayNozzleEvent(t *testing.T) {
 
 	if p.SprayNozzleOpen() {
 		t.Error("Expected spray nozzle to be closed after the second event")
+	}
+	if p.SprayFlowRate() != 0.0 {
+		t.Errorf("Expected spray flow rate to be 0.0 when nozzle is closed, got %f", p.SprayFlowRate())
 	}
 	if !eventToWatch.IsComplete() {
 		t.Error("SprayNozzleEvent (close) should be completed after one step")
@@ -133,26 +139,22 @@ func TestSetPressureEvent(t *testing.T) {
 	pwrSim.QueueEvent(NewEvent_HeaterPower(true))
 	eventToWatch := &pwrSim.Events[0]
 
-	// Run the simulation for a few steps
-	// Run the simulation for a few steps
+	pwrSim.RunForABit(0, 0, 0, 10)
+	if eventToWatch.IsInProgress() && !p.HeaterOnHigh() {
+		t.Error("Heater should be on high power to raise pressure")
+	}
+
 	pwrSim.RunForABit(1, 0, 0, 0)
 
-	// Check if the pressure has changed
 	if p.Pressure() == initialPressure {
 		t.Errorf("Pressure did not change. Expected it to move towards %f, but got %f", targetPressure, p.Pressure())
 	}
-
-	// Check if the pressure reached the target
 	if p.Pressure() < targetPressure {
 		t.Errorf("Pressure did not reach target. Expected %f, got %f", targetPressure, p.Pressure())
 	}
-
-	// Check if the event is completed
 	if !eventToWatch.IsComplete() {
 		t.Error("Event should be completed after reaching target pressure")
 	}
-
-	// Check if heater is on low power after reaching target
 	if eventToWatch.IsComplete() && !p.HeaterOnLow() {
 		t.Error("Heater should be on low power after reaching target pressure")
 	}

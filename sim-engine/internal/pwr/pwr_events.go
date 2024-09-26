@@ -34,6 +34,6 @@ func NewEvent_TargetPressure(pressure float64) simworks.Event {
 	return simworks.NewAdjustmentEvent(Event_pr_targetPressure, pressure)
 }
 
-func NewEvent_ReliefValveVent(open bool) simworks.Event {
+func NewEvent_ReliefValveVent() simworks.Event {
 	return simworks.NewImmediateEvent(Event_pr_reliefValveVent)
 }

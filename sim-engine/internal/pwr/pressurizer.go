@@ -109,19 +109,10 @@ func (p *Pressurizer) Update(s *simworks.Simulator) (map[string]interface{}, err
 		}
 	}
 
-	// TODO: turn this into an event that simulator picks up as signal to operator
-
-	// if p.pressure > RELIEF_VALVE_THRESHOLD_PRESSURE {
-	// 	s.QueueEvent(simworks.Event{
-	// 		Code:  Event_pr_reliefValve,
-	// 		Truth: true,
-	// 		Due:   s.CurrentMoment() + 1,
-	// 	})
-	// } else {
-	// 	p.reliefValveOpened = false
-	// }
-
-	// calculate temperature; then lookup pressure from steam tables
+	if p.pressure > Config["pressurizer"]["relief_valve_threshold_pressure"] {
+		s.QueueEvent(NewEvent_ReliefValveVent())
+		p.pressure -= 1.0
+	}
 
 	return p.Status(), nil
 }
