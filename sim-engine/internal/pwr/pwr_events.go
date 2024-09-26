@@ -21,14 +21,14 @@ func NewBoronConcentrationEvent(concentration float64) simworks.Event {
 	return simworks.NewAdjustmentEvent(Event_pl_boronConcentration, concentration)
 }
 
-func NewTargetPressureEvent(pressure float64) simworks.Event {
-	return simworks.NewAdjustmentEvent(Event_pr_targetPressure, pressure)
-}
-
 func NewHeaterPowerEvent(on bool) simworks.Event {
 	return simworks.NewImmediateEventBool(Event_pr_heaterPower, on)
 }
 
 func NewSprayNozzleEvent(open bool) simworks.Event {
 	return simworks.NewImmediateEventBool(Event_pr_sprayNozzle, open)
+}
+
+func NewTargetPressureEvent(pressure float64) simworks.Event {
+	return simworks.NewAdjustmentEvent(Event_pr_targetPressure, pressure)
 }
