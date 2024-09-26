@@ -145,8 +145,8 @@ func (pl *PrimaryLoop) processInstantEvent(event *simworks.Event) {
 			pl.pumpHeat = Config["primary_loop"]["pump_off_heat"]
 			pl.flowRate = Config["primary_loop"]["pump_off_flow_rate"]
 		}
+		event.SetComplete()
 	}
-	event.SetComplete()
 }
 
 func (pl *PrimaryLoop) processGradualEvent(event *simworks.Event) {

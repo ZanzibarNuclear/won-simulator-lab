@@ -73,4 +73,7 @@ func (s *Simulator) PrintStatus() {
 	for _, component := range s.Components {
 		component.Print()
 	}
+	for _, event := range s.Events {
+		fmt.Println(event.State())
+	}
 }

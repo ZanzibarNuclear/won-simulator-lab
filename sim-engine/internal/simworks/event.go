@@ -64,6 +64,26 @@ func (e *Event) ForDuration(duration time.Duration) *Event {
 	return e
 }
 
+// Status returns a map containing the current status of the event
+func (e *Event) State() map[string]interface{} {
+	status := map[string]interface{}{
+		"code":         e.Code,
+		"status":       e.Status,
+		"immediate":    e.Immediate,
+		"target_value": e.TargetValue,
+	}
+
+	if !e.StartMoment.IsZero() {
+		status["start_moment"] = e.StartMoment
+	}
+
+	if e.Duration != 0 {
+		status["duration"] = e.Duration
+	}
+
+	return status
+}
+
 func (e *Event) SetComplete() {
 	e.Status = "completed"
 }

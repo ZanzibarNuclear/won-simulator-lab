@@ -8,30 +8,20 @@ import (
 
 type Pressurizer struct {
 	simworks.BaseComponent
-	targetPressure    float64
-	pressure          float64
-	temperature       float64
-	heaterOn          bool
-	heaterPower       float64 // in kW
-	heaterTemperature float64
-	sprayNozzleOpen   bool
-	sprayFlowRate     float64 // in kg/s
+	pressure        float64
+	temperature     float64
+	heaterOn        bool
+	heaterPower     float64 // in kW
+	sprayNozzleOpen bool
+	sprayFlowRate   float64 // in kg/s
 }
 
 func NewPressurizer(name string, description string) *Pressurizer {
 	return &Pressurizer{
-		BaseComponent:     *simworks.NewBaseComponent(name, description),
-		targetPressure:    Config["pressurizer"]["target_pressure"],
-		pressure:          Config["common"]["atmospheric_pressure"], // MPa, typical PWR pressurizer pressure
-		temperature:       Config["common"]["room_temperature"],     // °C, typical PWR pressurizer temperature
-		heaterTemperature: Config["common"]["room_temperature"],     // °C, typical pressurizer temperature
+		BaseComponent: *simworks.NewBaseComponent(name, description),
+		pressure:      Config["common"]["atmospheric_pressure"], // MPa, typical PWR pressurizer pressure
+		temperature:   Config["common"]["room_temperature"],     // °C, typical PWR pressurizer temperature
 	}
-}
-
-// TODO: create event to change target pressure
-
-func (p *Pressurizer) TargetPressure() float64 {
-	return p.targetPressure
 }
 
 func (p *Pressurizer) Pressure() float64 {
@@ -58,8 +48,12 @@ func (p *Pressurizer) HeaterPower() float64 {
 	return p.heaterPower
 }
 
-func (p *Pressurizer) HeaterTemperature() float64 {
-	return p.heaterTemperature
+func (p *Pressurizer) HeaterOnHigh() bool {
+	return p.heaterOn && p.heaterPower == Config["pressurizer"]["heater_high_power"]
+}
+
+func (p *Pressurizer) HeaterOnLow() bool {
+	return p.heaterOn && p.heaterPower == Config["pressurizer"]["heater_low_power"]
 }
 
 func (p *Pressurizer) SprayNozzleOpen() bool {
@@ -70,119 +64,138 @@ func (p *Pressurizer) SprayFlowRate() float64 {
 	return p.sprayFlowRate
 }
 
-// TODO: turn this into an event
-func (p *Pressurizer) SwitchOnHeater() {
-	p.heaterOn = true
-}
-
-// TODO: turn this into an event
-func (p *Pressurizer) SwitchOffHeater() {
-	p.heaterOn = false
-}
-
-// TODO: turn this into an event
-func (p *Pressurizer) OpenSprayNozzle() {
-	p.sprayNozzleOpen = true
-}
-
-// TODO: turn this into an event
-func (p *Pressurizer) CloseSprayNozzle() {
-	p.sprayNozzleOpen = false
-}
-
 func (p *Pressurizer) Status() map[string]interface{} {
 	return map[string]interface{}{
-		"about":             p.BaseComponent.Status(),
-		"targetPressure":    p.TargetPressure(),
-		"pressure":          p.Pressure(),
-		"pressureUnit":      p.PressureUnit(),
-		"temperature":       p.Temperature(),
-		"temperatureUnit":   p.TemperatureUnit(),
-		"heaterOn":          p.HeaterOn(),
-		"heaterPower":       p.HeaterPower(),
-		"heaterTemperature": p.HeaterTemperature(),
-		"sprayNozzleOpen":   p.SprayNozzleOpen(),
-		"sprayFlowRate":     p.SprayFlowRate(),
+		"about":           p.BaseComponent.Status(),
+		"pressure":        p.Pressure(),
+		"pressureUnit":    p.PressureUnit(),
+		"temperature":     p.Temperature(),
+		"temperatureUnit": p.TemperatureUnit(),
+		"heaterOn":        p.HeaterOn(),
+		"heaterPower":     p.HeaterPower(),
+		"sprayNozzleOpen": p.SprayNozzleOpen(),
+		"sprayFlowRate":   p.SprayFlowRate(),
 	}
 }
 
 func (p *Pressurizer) Print() {
 	fmt.Printf("=> Pressurizer\n")
 	p.BaseComponent.Print()
-	fmt.Printf("Target Pressure: %.2f %s\n", p.TargetPressure(), p.PressureUnit())
 	fmt.Printf("Pressure: %.2f %s\n", p.Pressure(), p.PressureUnit())
 	fmt.Printf("Temperature: %.2f %s\n", p.Temperature(), p.TemperatureUnit())
 	fmt.Printf("Heater On: %t\n", p.HeaterOn())
 	fmt.Printf("Heater Power: %.2f %s\n", p.HeaterPower(), p.TemperatureUnit())
-	fmt.Printf("Heater Temperature: %.2f %s\n", p.HeaterTemperature(), p.TemperatureUnit())
 	fmt.Printf("Spray Nozzle Open: %t\n", p.SprayNozzleOpen())
 	fmt.Printf("Spray Flow Rate: %.2f %s\n", p.SprayFlowRate(), p.TemperatureUnit())
 }
 
-func (p *Pressurizer) Update(s *simworks.Simulator) {
-	// dt := 60 // seconds
-	//
-	// Simple formula for pressure changes:
-	//   ΔP = (Q * β) / (V * Cp)
-	//
-	// Where:
-	//   ΔP = Change in pressure
-	//   Q = Heat input from the heater
-	//   β = Coefficient of thermal expansion of water
-	//   V = Volume of the pressurizer
-	//   Cp = Specific heat capacity of water at constant pressure
-	//
-	// Also need the formula for water temperature based on pressure:
-	//   T = T0 * (1 + β * ΔP)
-	//
-	// Where:
-	//   T = Temperature of the water
-	//   T0 = Initial temperature of the water
-	//   β = Coefficient of thermal expansion of water
-	//   ΔP = Change in pressure
+func (p *Pressurizer) Update(s *simworks.Simulator) (map[string]interface{}, error) {
+	p.BaseComponent.Update(s)
 
-	// TODO: this code is even simpler (and only directionally correct)
-	if p.heaterOn {
-		p.heaterTemperature = TARGET_TEMPERATURE
-		if p.pressure < p.targetPressure || p.temperature < TARGET_TEMPERATURE {
-			p.heaterPower = HEATER_HIGH_POWER
-
-			// adjust pressure and temperature independently -- not realistic
-			p.pressure += 1.0 // MPa, raise pressure by 0.5 MPa each update
-			if p.pressure > p.targetPressure {
-				p.pressure = p.targetPressure // cap pressure at TARGET_PRESSURE
+	for i := range s.Events {
+		event := &s.Events[i]
+		if event.IsPending() {
+			if event.IsDue(s.CurrentMoment()) {
+				event.SetInProgress()
 			}
-			p.temperature += 20.0
-			if p.temperature > TARGET_TEMPERATURE {
-				p.temperature = TARGET_TEMPERATURE
-			}
-		} else {
-			p.heaterPower = HEATER_LOW_POWER // maintain pressure
 		}
-	} else {
-		p.pressure -= 0.25 // MPa, assumption: pressure drops slowly when heater off
-		if p.pressure < 0.0 {
-			p.pressure = 0.0
+
+		if event.IsInProgress() {
+			if event.Immediate {
+				p.processInstantEvent(event)
+			} else {
+				p.processGradualEvent(event)
+			}
 		}
 	}
 
-	if p.sprayNozzleOpen {
-		p.sprayFlowRate = SPRAY_FLOW_RATE
-		p.pressure -= 0.5 // MPa; lower pressure
-		p.temperature -= 20.0
-		if p.temperature < ROOM_TEMPERATURE {
-			p.temperature = ROOM_TEMPERATURE
-		}
-	} else {
-		p.sprayFlowRate = 0.0
-	}
+	// TODO: turn this into an event that simulator picks up as signal to operator
 
-	// TODO: turn this into an event
 	// if p.pressure > RELIEF_VALVE_THRESHOLD_PRESSURE {
-	// 	p.reliefValveOpened = true
-	// 	p.pressure -= RELIEF_VALVE_DROP_RATE
+	// 	s.QueueEvent(simworks.Event{
+	// 		Code:  Event_pr_reliefValve,
+	// 		Truth: true,
+	// 		Due:   s.CurrentMoment() + 1,
+	// 	})
 	// } else {
 	// 	p.reliefValveOpened = false
 	// }
 
+	// calculate temperature; then lookup pressure from steam tables
+
+	return p.Status(), nil
+}
+
+func (p *Pressurizer) processInstantEvent(event *simworks.Event) {
+	switch event.Code {
+	case Event_pr_heaterPower:
+		p.heaterOn = event.Truthy()
+		if p.heaterOn {
+			p.setHeaterLow()
+		} else {
+			p.heaterPower = 0.0
+		}
+		event.SetComplete()
+
+	case Event_pr_sprayNozzle:
+		p.sprayNozzleOpen = event.Truthy()
+		if p.sprayNozzleOpen {
+			p.sprayFlowRate = Config["pressurizer"]["spray_flow_rate"]
+		} else {
+			p.sprayFlowRate = 0.0
+		}
+		event.SetComplete()
+	}
+}
+
+func (p *Pressurizer) processGradualEvent(event *simworks.Event) {
+	targetValue := event.TargetValue
+	switch event.Code {
+	case Event_pr_targetPressure:
+		p.adjustPressure(targetValue)
+		if p.pressure >= targetValue {
+			p.heaterPower = Config["pressurizer"]["heater_low_power"]
+			event.SetComplete()
+		}
+	}
+}
+
+func (p *Pressurizer) setHeaterHigh() {
+	p.heaterPower = Config["pressurizer"]["heater_high_power"]
+}
+
+func (p *Pressurizer) setHeaterLow() {
+	p.heaterPower = Config["pressurizer"]["heater_low_power"]
+}
+
+func (p *Pressurizer) adjustPressure(targetValue float64) {
+
+	// is heater on?
+	if p.heaterOn {
+		if p.pressure < targetValue {
+			if !p.HeaterOnHigh() {
+				p.setHeaterHigh()
+			}
+		} else {
+			p.setHeaterLow()
+		}
+
+		if p.HeaterOnHigh() {
+			p.temperature += 1.0
+		}
+	} else {
+		p.temperature -= 1.0 // TODO: would be better to find out how quickly pressurizer cools when heaters are off
+	}
+
+	if p.sprayNozzleOpen {
+		p.temperature -= 5.0 // TODO: would be better to calculate using cold leg temp and volume of water sprayed
+	}
+
+	if p.temperature < 290 {
+		p.temperature = 290.0 // TODO: assuming cold leg temp
+	}
+
+	// look up pressure from steam tables given temperature
+	steamValues := InterpolateSteamProperties(p.temperature)
+	p.pressure = steamValues.Pressure
 }
