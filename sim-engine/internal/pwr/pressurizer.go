@@ -93,7 +93,7 @@ func (p *Pressurizer) Update(s *simworks.Simulator) (map[string]interface{}, err
 	p.BaseComponent.Update(s)
 
 	for i := range s.Events {
-		event := &s.Events[i]
+		event := s.Events[i]
 		if event.IsPending() {
 			if event.IsDue(s.CurrentMoment()) {
 				event.SetInProgress()

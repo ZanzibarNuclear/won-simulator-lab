@@ -17,22 +17,22 @@ func (e *Event) EndMoment() time.Time {
 }
 
 // NewImmediateEvent creates a new immediate event with the given code
-func NewImmediateEvent(code string) Event {
-	return Event{
+func NewImmediateEvent(code string) *Event {
+	return &Event{
 		Code:      code,
 		Status:    "pending",
 		Immediate: true,
 	}
 }
 
-func NewImmediateEventBool(code string, value bool) Event {
+func NewImmediateEventBool(code string, value bool) *Event {
 	var targetValue float64
 	if value {
 		targetValue = 1.0
 	} else {
 		targetValue = 0.0
 	}
-	return Event{
+	return &Event{
 		Code:        code,
 		Status:      "pending",
 		Immediate:   true,
@@ -41,8 +41,8 @@ func NewImmediateEventBool(code string, value bool) Event {
 }
 
 // NewAdjustmentEvent creates a new adjustment event with the given code and target value
-func NewAdjustmentEvent(code string, targetValue float64) Event {
-	return Event{
+func NewAdjustmentEvent(code string, targetValue float64) *Event {
+	return &Event{
 		Code:        code,
 		Status:      "pending",
 		TargetValue: targetValue,

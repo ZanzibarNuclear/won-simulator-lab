@@ -70,8 +70,8 @@ func TestAdjustBoronConcentration(t *testing.T) {
 	// turn on pump and establish boron concentration target
 	sim.QueueEvent(NewEvent_PumpSwitch(true))
 	boronTarget := 300.0
-	sim.QueueEvent(NewEvent_BoronConcentration(boronTarget))
-	eventToWatch := &sim.Events[1]
+	eventToWatch := NewEvent_BoronConcentration(boronTarget)
+	sim.QueueEvent(eventToWatch)
 
 	if !eventToWatch.IsPending() {
 		t.Errorf("Expected event to be pending, got %v", eventToWatch.Status)
@@ -80,9 +80,6 @@ func TestAdjustBoronConcentration(t *testing.T) {
 	sim.Step()
 	sim.Step()
 
-	if eventToWatch.Code != Event_pl_boronConcentration {
-		t.Errorf("Expected event to be %v, got %v", Event_pl_boronConcentration, eventToWatch.Code)
-	}
 	if !eventToWatch.IsInProgress() {
 		t.Errorf("Expected event to be in progress, got %v", eventToWatch.Status)
 	}
@@ -113,7 +110,8 @@ func TestBoronConcentrationWhenPumpInitiallyOff(t *testing.T) {
 
 	// Try to adjust boron concentration
 	boronTarget := 50.0
-	sim.QueueEvent(NewEvent_BoronConcentration(boronTarget))
+	boronEvent := NewEvent_BoronConcentration(boronTarget)
+	sim.QueueEvent(boronEvent)
 	sim.RunForABit(0, 0, 1, 0) // Run for 1 minute
 
 	// Check that boron concentration hasn't changed
@@ -122,9 +120,8 @@ func TestBoronConcentrationWhenPumpInitiallyOff(t *testing.T) {
 	}
 
 	// Verify that the event is still in progress (not completed)
-	eventToWatch := &sim.Events[0]
-	if !eventToWatch.IsInProgress() {
-		t.Errorf("Expected boron adjustment event to be in progress, but got status: %v", eventToWatch.Status)
+	if !boronEvent.IsInProgress() {
+		t.Errorf("Expected boron adjustment event to be in progress, but got status: %v", boronEvent.Status)
 	}
 
 	sim.QueueEvent(NewEvent_PumpSwitch(true))
@@ -144,8 +141,7 @@ func TestBoronConcentrationWhenPumpInitiallyOff(t *testing.T) {
 		t.Errorf("Expected boron to reach target, but it is at %v", pl.BoronConcentration())
 	}
 
-	eventToWatch = &sim.Events[0]
-	if !eventToWatch.IsComplete() {
-		t.Errorf("Expected boron adjustment event to be complete, but got status: %v", eventToWatch.Status)
+	if !boronEvent.IsComplete() {
+		t.Errorf("Expected boron adjustment event to be complete, but got status: %v", boronEvent.Status)
 	}
 }

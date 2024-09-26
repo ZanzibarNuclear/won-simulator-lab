@@ -2,6 +2,8 @@ package pwr
 
 import (
 	"testing"
+
+	"worldofnuclear.com/internal/simworks"
 )
 
 func TestNewPressurizerDefaults(t *testing.T) {
@@ -50,8 +52,8 @@ func TestHeaterPowerEvent(t *testing.T) {
 	}
 
 	// Create and queue the event to turn the heater on
-	pwrSim.QueueEvent(NewEvent_HeaterPower(true))
-	eventToWatch := &pwrSim.Events[0]
+	eventToWatch := NewEvent_HeaterPower(true)
+	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.Step()
 
 	if !p.HeaterOn() {
@@ -62,8 +64,8 @@ func TestHeaterPowerEvent(t *testing.T) {
 	}
 
 	// Now test turning the heater off
-	pwrSim.QueueEvent(NewEvent_HeaterPower(false))
-	eventToWatch = &pwrSim.Events[1]
+	eventToWatch = NewEvent_HeaterPower(false)
+	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.Step()
 
 	if p.HeaterOn() {
@@ -85,8 +87,8 @@ func TestSprayNozzleEvent(t *testing.T) {
 	}
 
 	// Create and queue the event to open the spray nozzle
-	pwrSim.QueueEvent(NewEvent_SprayNozzle(true))
-	eventToWatch := &pwrSim.Events[0]
+	eventToWatch := NewEvent_SprayNozzle(true)
+	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.Step()
 
 	if !p.SprayNozzleOpen() {
@@ -106,8 +108,8 @@ func TestSprayNozzleEvent(t *testing.T) {
 	}
 
 	// Now test closing the spray nozzle
-	pwrSim.QueueEvent(NewEvent_SprayNozzle(false))
-	eventToWatch = &pwrSim.Events[1]
+	eventToWatch = NewEvent_SprayNozzle(false)
+	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.Step()
 
 	if p.SprayNozzleOpen() {
@@ -135,9 +137,9 @@ func TestSetPressureEvent(t *testing.T) {
 	targetPressure := 15.5 // MPa, typical operating pressure
 
 	// Create and queue the event
-	pwrSim.QueueEvent(NewEvent_TargetPressure(targetPressure))
+	eventToWatch := NewEvent_TargetPressure(targetPressure)
+	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.QueueEvent(NewEvent_HeaterPower(true))
-	eventToWatch := &pwrSim.Events[0]
 
 	pwrSim.RunForABit(0, 0, 0, 10)
 	if eventToWatch.IsInProgress() && !p.HeaterOnHigh() {
@@ -165,14 +167,13 @@ func TestReliefValveVentEvent(t *testing.T) {
 	pwrSim := NewPwrSim("Test PWR", "Relief valve vent test simulation")
 	pwrSim.AddComponent(p)
 
-	// TODO: Relief valve vent should come from the pressurizer
 	targetPressure := 20.0 // higher than threshold
 
 	// Set up conditions to raise pressure
-	pwrSim.QueueEvent(NewEvent_TargetPressure(targetPressure))
-	pwrSim.QueueEvent(NewEvent_HeaterPower(true))
-	pressureEvent := &pwrSim.Events[0]
-	heaterEvent := &pwrSim.Events[1]
+	pressureEvent := NewEvent_TargetPressure(targetPressure)
+	pwrSim.QueueEvent(pressureEvent)
+	heaterEvent := NewEvent_HeaterPower(true)
+	pwrSim.QueueEvent(heaterEvent)
 	pwrSim.Step()
 
 	if !pressureEvent.IsInProgress() {
@@ -190,10 +191,17 @@ func TestReliefValveVentEvent(t *testing.T) {
 		return
 	}
 
-	reliefValveEvent := &pwrSim.Events[2]
-
-	if reliefValveEvent.Code != Event_pr_reliefValveVent {
-		t.Errorf("Expected relief valve vent event, got %s", reliefValveEvent.Code)
+	// Find the relief valve event in InactiveEvents
+	var reliefValveEvent *simworks.Event
+	for _, event := range pwrSim.InactiveEvents {
+		if event.Code == Event_pr_reliefValveVent {
+			reliefValveEvent = event
+			break
+		}
+	}
+	if reliefValveEvent == nil {
+		t.Error("Relief valve vent event not found in InactiveEvents")
+		return
 	}
 	if !reliefValveEvent.IsComplete() {
 		t.Error("Relief valve vent event should have been processed by simulator")

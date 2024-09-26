@@ -111,7 +111,7 @@ func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, er
 
 	// TODO: try to move this to BaseComponent
 	for i := range s.Events {
-		event := &s.Events[i]
+		event := s.Events[i]
 		if event.IsPending() {
 			if event.IsDue(s.CurrentMoment()) {
 				event.SetInProgress()

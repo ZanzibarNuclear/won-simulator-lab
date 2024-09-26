@@ -52,6 +52,7 @@ type EventHandlerThingy struct {
 }
 
 func (e *EventHandlerThingy) ProcessEvent(event *Event) {
+	fmt.Printf("Processing event: %s\n", event.Code)
 	switch event.Code {
 	case Event_count:
 		e.count++
@@ -60,6 +61,7 @@ func (e *EventHandlerThingy) ProcessEvent(event *Event) {
 		e.count *= 10
 		event.SetComplete()
 	}
+	fmt.Printf("Event status is: %s\n", event.Status)
 }
 
 func TestSimulator_EventHandling(t *testing.T) {

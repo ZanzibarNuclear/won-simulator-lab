@@ -14,26 +14,26 @@ const (
 	Event_pr_reliefValveVent    = "pressurizer.relief_valve_vent"
 )
 
-func NewEvent_PumpSwitch(on bool) simworks.Event {
+func NewEvent_PumpSwitch(on bool) *simworks.Event {
 	return simworks.NewImmediateEventBool(Event_pl_pumpSwitch, on)
 }
 
-func NewEvent_BoronConcentration(concentration float64) simworks.Event {
+func NewEvent_BoronConcentration(concentration float64) *simworks.Event {
 	return simworks.NewAdjustmentEvent(Event_pl_boronConcentration, concentration)
 }
 
-func NewEvent_HeaterPower(on bool) simworks.Event {
+func NewEvent_HeaterPower(on bool) *simworks.Event {
 	return simworks.NewImmediateEventBool(Event_pr_heaterPower, on)
 }
 
-func NewEvent_SprayNozzle(open bool) simworks.Event {
+func NewEvent_SprayNozzle(open bool) *simworks.Event {
 	return simworks.NewImmediateEventBool(Event_pr_sprayNozzle, open)
 }
 
-func NewEvent_TargetPressure(pressure float64) simworks.Event {
+func NewEvent_TargetPressure(pressure float64) *simworks.Event {
 	return simworks.NewAdjustmentEvent(Event_pr_targetPressure, pressure)
 }
 
-func NewEvent_ReliefValveVent() simworks.Event {
+func NewEvent_ReliefValveVent() *simworks.Event {
 	return simworks.NewImmediateEvent(Event_pr_reliefValveVent)
 }

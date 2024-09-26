@@ -15,8 +15,8 @@ type Simulator struct {
 	Environment    *Environment
 	Components     []SimComponent
 	ComponentIndex map[string]SimComponent
-	Events         []Event
-	InactiveEvents []Event
+	Events         []*Event
+	InactiveEvents []*Event
 	EventHandler   EventHandler
 }
 
@@ -31,8 +31,8 @@ func NewSimulator(name, purpose string) *Simulator {
 		Environment:    NewEnvironment(),
 		Components:     []SimComponent{},
 		ComponentIndex: make(map[string]SimComponent),
-		Events:         []Event{},
-		InactiveEvents: []Event{},
+		Events:         []*Event{},
+		InactiveEvents: []*Event{},
 	}
 }
 
@@ -65,9 +65,10 @@ func (s *Simulator) Step() {
 }
 
 func (s *Simulator) ReviewPendingEvents() {
-	for _, event := range s.Events {
+	for i, event := range s.Events {
 		if event.IsPending() && event.IsDue(s.CurrentMoment()) {
-			s.EventHandler.ProcessEvent(&event)
+			s.EventHandler.ProcessEvent(event)
+			fmt.Printf("Event status post processing: %s\n", s.Events[i].Status)
 		}
 	}
 }
@@ -75,7 +76,6 @@ func (s *Simulator) ReviewPendingEvents() {
 func (s *Simulator) TidyUpEvents() {
 	n := 0
 	for _, event := range s.Events {
-		fmt.Printf("Event status: %s\n", event.Status)
 		if event.IsComplete() || event.IsCanceled() {
 			s.InactiveEvents = append(s.InactiveEvents, event)
 		} else {
@@ -100,7 +100,7 @@ func (s *Simulator) AddComponent(c SimComponent) {
 	s.ComponentIndex[c.ID()] = c
 }
 
-func (s *Simulator) QueueEvent(e Event) {
+func (s *Simulator) QueueEvent(e *Event) {
 	s.Events = append(s.Events, e)
 }
 
