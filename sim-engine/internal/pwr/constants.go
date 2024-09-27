@@ -23,11 +23,19 @@ var PressurizerConfig = map[string]float64{
 	"relief_valve_drop_rate":          0.5, // MPa/s
 }
 
+var SecondaryLoopConfig = map[string]float64{
+	"ideal_steam_temperature":      285.0,
+	"mssv_pressure_threshold":      8.0,
+	"base_feedwater_temperature":   40.0,
+	"heated_feedwater_temperature": 80.0,
+}
+
 var Config = map[string]map[string]float64{
 	"common": {
 		"room_temperature":     20.0,
 		"atmospheric_pressure": 0.101325,
 	},
-	"primary_loop": PrimaryLoopConfig,
-	"pressurizer":  PressurizerConfig,
+	"primary_loop":   PrimaryLoopConfig,
+	"pressurizer":    PressurizerConfig,
+	"secondary_loop": SecondaryLoopConfig,
 }

@@ -68,7 +68,7 @@ func (pl *PrimaryLoop) HotLegTemperature() float64 {
 }
 
 func (pl *PrimaryLoop) TemperatureUnit() string {
-	return "C"
+	return "˚C"
 }
 
 func (pl *PrimaryLoop) ColdLegTemperature() float64 {
