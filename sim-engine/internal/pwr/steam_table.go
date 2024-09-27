@@ -69,3 +69,32 @@ func InterpolateSteamProperties(temperature float64) SteamTableEntry {
 		Enthalpy:       low.Enthalpy + ratio*(high.Enthalpy-low.Enthalpy),
 	}
 }
+
+// InterpolateFromGivenPressure returns interpolated steam properties for a given pressure
+func InterpolateFromGivenPressure(pressure float64) SteamTableEntry {
+	if pressure <= SteamTable[0].Pressure {
+		return SteamTable[0]
+	}
+	if pressure >= SteamTable[len(SteamTable)-1].Pressure {
+		return SteamTable[len(SteamTable)-1]
+	}
+
+	var lowIndex int
+	for i, entry := range SteamTable {
+		if entry.Pressure > pressure {
+			lowIndex = i - 1
+			break
+		}
+	}
+
+	low := SteamTable[lowIndex]
+	high := SteamTable[lowIndex+1]
+	ratio := (pressure - low.Pressure) / (high.Pressure - low.Pressure)
+
+	return SteamTableEntry{
+		Temperature:    low.Temperature + ratio*(high.Temperature-low.Temperature),
+		Pressure:       pressure,
+		SpecificVolume: low.SpecificVolume + ratio*(high.SpecificVolume-low.SpecificVolume),
+		Enthalpy:       low.Enthalpy + ratio*(high.Enthalpy-low.Enthalpy),
+	}
+}

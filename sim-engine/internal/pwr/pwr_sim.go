@@ -28,10 +28,13 @@ func (s *PwrSim) PrintStatus() {
 	println("\n--- Like we always say: ", s.motto, " ---")
 }
 
-func (s *PwrSim) ProcessEvent(event simworks.Event) {
-
+func (s *PwrSim) ProcessEvent(event *simworks.Event) {
 	switch event.Code {
 	case Event_pr_reliefValveVent:
 		fmt.Println("The pressurizer relief valve was triggered and is venting.")
+		event.SetComplete()
+	default:
+		fmt.Println("Event code not handled:", event.Code)
 	}
+
 }

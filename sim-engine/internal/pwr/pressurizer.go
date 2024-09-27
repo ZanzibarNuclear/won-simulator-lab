@@ -110,8 +110,17 @@ func (p *Pressurizer) Update(s *simworks.Simulator) (map[string]interface{}, err
 	}
 
 	if p.pressure > Config["pressurizer"]["relief_valve_threshold_pressure"] {
-		s.QueueEvent(NewEvent_ReliefValveVent())
-		p.pressure -= 1.0
+		reliefValveEvent := NewEvent_ReliefValveVent()
+		reliefValveEvent.ScheduleAt(s.CurrentMoment())
+		s.QueueEvent(reliefValveEvent)
+
+		// Assume that venting lowers pressure and temperature along saturation curve
+		newPressure := p.pressure - 1.0
+		steamProperties := InterpolateFromGivenPressure(newPressure)
+		fmt.Printf("Steam properties at %.2f MPa: Temperature %.2f °C, Pressure %.2f MPa\n",
+			newPressure, steamProperties.Temperature, steamProperties.Pressure)
+		p.pressure = steamProperties.Pressure
+		p.temperature = steamProperties.Temperature
 	}
 
 	return p.Status(), nil
@@ -176,14 +185,16 @@ func (p *Pressurizer) adjustPressure(targetValue float64) {
 		}
 	} else {
 		p.temperature -= 1.0 // TODO: would be better to find out how quickly pressurizer cools when heaters are off
+		if p.temperature < 290 {
+			p.temperature = 290.0 // TODO: assuming cold leg temp
+		}
 	}
 
 	if p.sprayNozzleOpen {
 		p.temperature -= 5.0 // TODO: would be better to calculate using cold leg temp and volume of water sprayed
-	}
-
-	if p.temperature < 290 {
-		p.temperature = 290.0 // TODO: assuming cold leg temp
+		if p.temperature < 290 {
+			p.temperature = 290.0 // TODO: assuming cold leg temp
+		}
 	}
 
 	// look up pressure from steam tables given temperature

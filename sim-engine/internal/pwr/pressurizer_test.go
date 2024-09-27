@@ -166,6 +166,7 @@ func TestReliefValveVentEvent(t *testing.T) {
 	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
 	pwrSim := NewPwrSim("Test PWR", "Relief valve vent test simulation")
 	pwrSim.AddComponent(p)
+	pwrSim.SetEventHandler(pwrSim)
 
 	targetPressure := 20.0 // higher than threshold
 
@@ -183,22 +184,41 @@ func TestReliefValveVentEvent(t *testing.T) {
 		t.Error("Heater event should be complete")
 	}
 
-	// Run the simulation for a few steps
-	pwrSim.RunForABit(0, 3, 0, 0)
+	pwrSim.RunForABit(0, 0, 0, 5)
 
-	if len(pwrSim.Events) < 3 {
-		t.Errorf("Expected 3 events at this point, got %d", len(pwrSim.Events))
+	if len(pwrSim.Events) > 1 {
+		t.Errorf("Expected 1 event at this point, got %d", len(pwrSim.Events))
+		return
+	}
+	if len(pwrSim.InactiveEvents) != 1 {
+		t.Errorf("Expected 1 inactive event at this point, got %d", len(pwrSim.InactiveEvents))
+		return
+	}
+
+	pwrSim.RunForABit(0, 0, 1, 2)
+	// t.Logf("Pressurizer status: %v", p.Status())
+	// for _, event := range pwrSim.Events {
+	// 	t.Logf("Event: %v", event)
+	// }
+	// for _, event := range pwrSim.InactiveEvents {
+	// 	t.Logf("Inactive event: %v", event)
+	// }
+
+	if len(pwrSim.InactiveEvents) != 2 {
+		t.Errorf("Expected 2 inactive event at this point, got %d", len(pwrSim.InactiveEvents))
 		return
 	}
 
 	// Find the relief valve event in InactiveEvents
 	var reliefValveEvent *simworks.Event
 	for _, event := range pwrSim.InactiveEvents {
+		// t.Logf("Inactive event: %v", event)
 		if event.Code == Event_pr_reliefValveVent {
 			reliefValveEvent = event
 			break
 		}
 	}
+
 	if reliefValveEvent == nil {
 		t.Error("Relief valve vent event not found in InactiveEvents")
 		return
