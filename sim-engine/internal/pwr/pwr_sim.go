@@ -21,6 +21,9 @@ func NewPwrSim(name, motto string) *PwrSim {
 func (s *PwrSim) SetupStandardComponents() {
 	pl := NewPrimaryLoop("PL1", "The primary loop circulates coolant through the reactor core, carrying boron for moderation and heat from the core to the steam generators.")
 	s.AddComponent(pl)
+
+	pr := NewPressurizer("PR1", "The pressurizer heats the coolant to a high pressure and temperature, providing the energy to turn the turbines.")
+	s.AddComponent(pr)
 }
 
 func (s *PwrSim) PrintStatus() {

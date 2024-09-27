@@ -2,20 +2,29 @@ package main
 
 import (
 	"worldofnuclear.com/internal/pwr"
-	"worldofnuclear.com/internal/simworks"
 )
 
 func main() {
 	sim := pwr.NewPwrSim("PWR Sim", "Some like it hot.")
+	sim.SetEventHandler(sim)
+
 	sim.SetupStandardComponents()
 	sim.Step()
 
-	sim.QueueEvent(simworks.NewImmediateEventBool(pwr.Event_pl_pumpSwitch, true))
+	sim.QueueEvent(pwr.NewEvent_PumpSwitch(true))
 	sim.RunForABit(0, 0, 1, 0)
-	sim.PrintStatus()
+	// sim.PrintStatus()
 
-	sim.QueueEvent(simworks.NewAdjustmentEvent(pwr.Event_pl_boronConcentration, 300.0))
+	sim.QueueEvent(pwr.NewEvent_BoronConcentration(300.0))
 	sim.RunForABit(0, 0, 25, 0)
+	// sim.PrintStatus()
+
+	sim.QueueEvent(pwr.NewEvent_TargetPressure(15.5))
+	sim.QueueEvent(pwr.NewEvent_HeaterPower(true))
+	sim.RunForABit(0, 0, 0, 10)
+	// sim.PrintStatus()
+
+	sim.RunForABit(0, 3, 0, 0)
 	sim.PrintStatus()
 }
 
