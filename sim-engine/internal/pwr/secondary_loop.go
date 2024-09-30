@@ -40,6 +40,11 @@ func (sl *SecondaryLoop) SteamPressure() float64 {
 	return sl.steamPressure
 }
 
+func (sl *SecondaryLoop) SetSteamPressure(pressure float64) {
+	sl.steamPressure = pressure
+	sl.steamTemperature = InterpolateFromGivenPressure(pressure).Temperature
+}
+
 func (sl *SecondaryLoop) SteamPressureUnit() string {
 	return "MPa"
 }
@@ -156,12 +161,12 @@ func (sl *SecondaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, 
 	// vent steam when pressure is too high
 	if sl.steamPressure > Config["secondary_loop"]["mssv_pressure_threshold"] {
 		s.QueueEvent(NewEvent_EmergencyMSSVReleased().ScheduleAt(s.CurrentMoment()))
-		sl.steamPressure -= 2.0 // MPa; arbitrary value TODO: use a more realistic value
+		sl.steamPressure -= 0.5 // MPa; arbitrary value TODO: use a more realistic value
 		newTemperature := InterpolateFromGivenPressure(sl.steamPressure)
 		sl.steamTemperature = newTemperature.Temperature
 
 		// Log the pressure release and temperature change
-		fmt.Printf("Emergency MSSV released. Pressure dropped to %.2f MPa. Temperature adjusted to %.2f °C", sl.steamPressure, sl.steamTemperature)
+		fmt.Printf("Emergency MSSV released. Pressure dropped to %.2f MPa. Temperature adjusted to %.2f °C\n", sl.steamPressure, sl.steamTemperature)
 
 		// FIXME: pressure has to drop; temperature, too
 	}
@@ -178,6 +183,12 @@ func (sl *SecondaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, 
 	} else {
 		sl.feedwaterTemperatureOut = CalcLinearDecrease(sl.feedwaterTemperatureOut, sl.feedwaterTemperatureIn, Config["secondary_loop"]["feedheater_step_down"])
 	}
+
+	if sl.powerOperatedReliefValveOpen {
+		sl.steamPressure = CalcLinearDecrease(sl.steamPressure, Config["common"]["atmospheric_pressure"], 0.5)
+	}
+
+	sl.steamTemperature = InterpolateFromGivenPressure(sl.steamPressure).Temperature
 
 	// TODO: deal with power outages here and in general
 

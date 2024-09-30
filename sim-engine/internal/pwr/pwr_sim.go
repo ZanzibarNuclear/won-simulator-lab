@@ -37,6 +37,9 @@ func (s *PwrSim) ProcessEvent(event *simworks.Event) {
 	case Event_pr_reliefValveVent:
 		fmt.Println("The pressurizer relief valve was triggered and is venting.")
 		event.SetComplete()
+	case Event_sl_emergencyMSSVReleased:
+		fmt.Println("The emergency MSSV was released and is venting.")
+		event.SetComplete()
 	default:
 		fmt.Println("Event code not handled:", event.Code)
 	}

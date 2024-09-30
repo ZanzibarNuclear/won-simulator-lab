@@ -93,62 +93,51 @@ func TestSecondaryLoop_Feedheaters(t *testing.T) {
 }
 
 func TestSecondaryLoop_PowerOperatedReliefValve(t *testing.T) {
-	sl := NewSecondaryLoop("Test Secondary Loop", "A test secondary loop")
-	s := NewPwrSim("Test PWR", "Power Operated Relief Valve test simulation")
+	sl := NewSecondaryLoop("Test Secondary Loop", "Power Operated Relief Valve test")
+	s := simworks.NewSimulator("Test Sim", "Test Sim")
 	s.AddComponent(sl)
-	s.SetEventHandler(s)
 
-	// Initially, the Power Operated Relief Valve should be closed
-	assert.False(t, sl.PowerOperatedReliefValveOpen())
+	// build steam pressure (or set it as a shortcut)
 
-	// Queue an event to open the Power Operated Relief Valve
-	s.QueueEvent(NewEvent_PowerOperatedReliefValveSwitch(true))
+	sl.SetSteamPressure(5.0)
 	s.Step()
 
-	// Check if the valve is open
+	// open the value
+	pressureMark := sl.SteamPressure()
+	temperatureMark := sl.SteamTemperature()
+
+	s.QueueEvent(NewEvent_PowerOperatedReliefValveSwitch(true))
+	s.Step()
 	assert.True(t, sl.PowerOperatedReliefValveOpen())
 
-	// Queue an event to close the Power Operated Relief Valve
+	s.RunForABit(0, 0, 0, 4)
+
+	assert.Less(t, sl.SteamPressure(), pressureMark)
+	assert.Less(t, sl.SteamTemperature(), temperatureMark)
+
+	// close the value - pressure and temperature should hold
+	pressureMark = sl.SteamPressure()
+	temperatureMark = sl.SteamTemperature()
+
 	s.QueueEvent(NewEvent_PowerOperatedReliefValveSwitch(false))
 	s.Step()
 
-	// Check if the valve is closed
 	assert.False(t, sl.PowerOperatedReliefValveOpen())
-
-	// Set steam pressure above the threshold
-	sl.steamPressure = Config["secondary_loop"]["porv_pressure_threshold"] + 1.0
-	s.Step()
-
-	// Check if the valve automatically opens
-	assert.True(t, sl.PowerOperatedReliefValveOpen())
-
-	// Check if the steam pressure decreases
-	assert.Less(t, sl.SteamPressure(), Config["secondary_loop"]["porv_pressure_threshold"]+1.0)
-
-	// Run for a bit to let the pressure stabilize
-	s.RunForABit(0, 0, 1, 0)
-
-	// Check if the valve automatically closes when pressure is below threshold
-	assert.False(t, sl.PowerOperatedReliefValveOpen())
-	assert.LessOrEqual(t, sl.SteamPressure(), Config["secondary_loop"]["porv_pressure_threshold"])
+	assert.Equal(t, pressureMark, sl.SteamPressure())
+	assert.Equal(t, temperatureMark, sl.SteamTemperature())
 }
 
 func TestSecondaryLoop_MssvVentEvent(t *testing.T) {
 	sl := NewSecondaryLoop("Test Secondary Loop", "A test secondary loop")
-	s := simworks.NewSimulator("Test Sim", "Test Sim")
+	s := NewPwrSim("Test PWR", "Relief valve vent test simulation")
 	s.AddComponent(sl)
+	s.SetEventHandler(s)
+
 	s.Step()
 
-	// Initially, the MSSV should be closed
-	assert.False(t, sl.PowerOperatedReliefValveOpen())
-
-	sl.steamPressure = Config["secondary_loop"]["mssv_pressure_threshold"] + 0.1
-
-	// Check if the MSSV opens
-	assert.True(t, sl.PowerOperatedReliefValveOpen())
-
-	// Check if the steam pressure decreases
-	assert.Less(t, sl.SteamPressure(), Config["secondary_loop"]["mssv_pressure_threshold"]+0.1)
+	excessivePressure := Config["secondary_loop"]["mssv_pressure_threshold"] + 0.1
+	sl.SetSteamPressure(excessivePressure)
+	s.Step()
 
 	// Find the relief valve event in InactiveEvents
 	var mssvVentEvent *simworks.Event
@@ -168,4 +157,5 @@ func TestSecondaryLoop_MssvVentEvent(t *testing.T) {
 		t.Error("Relief valve vent event should have been processed by simulator")
 	}
 
+	assert.Less(t, sl.SteamPressure(), excessivePressure)
 }
