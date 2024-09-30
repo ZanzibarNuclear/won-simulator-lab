@@ -2,6 +2,7 @@ package pwr
 
 import (
 	"fmt"
+	"math"
 
 	"worldofnuclear.com/internal/simworks"
 )
@@ -130,89 +131,120 @@ func (sl *SecondaryLoop) Print() {
 // A little steam is vented when the pressure reach the safety threshold.
 
 func (sl *SecondaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, error) {
-	// TODO: react to Steam Generator; determine steam temperature and pressure
+	sl.BaseComponent.Update(s)
+
+	// TODO: try to move this to BaseComponent
+	for i := range s.Events {
+		event := s.Events[i]
+		if event.IsPending() {
+			if event.IsDue(s.CurrentMoment()) {
+				event.SetInProgress()
+			}
+		}
+
+		if event.IsInProgress() {
+			if event.Immediate {
+				sl.processInstantEvent(event)
+			} else {
+				sl.processGradualEvent(event)
+			}
+		}
+	}
+
+	// FIXME: react to Steam Generator; determine steam temperature and pressure
 	// steam moves at 60 mph during operation
-	// if sl.steamTemperature < Config {
-	// 	sl.steamTemperature += 10.0 // temperature increases some amount TODO: base this on Steam Generator
-	// 	sl.steamPressure += 1.0     // pressure increases accordingly TODO: base this on steam temperature
-	// }
 
 	// vent steam when pressure is too high
-	// if sl.steamPressure > Config["secondary_loop"]["mssv_pressure_threshold"] {
-	// 	sl.mainSteamSafetyValveOpened = true
-	// 	sl.steamPressure = Config["secondary_loop"]["mssv_pressure_threshold"] - 1.5 // TODO: research how much pressure would drop
-	// 	sl.steamTemperature -= 30.0                                                  // temperature drops some amount TODO: research how much per event
-	// } else {
-	// 	sl.mainSteamSafetyValveOpened = false
-	// }
+	if sl.steamPressure > Config["secondary_loop"]["mssv_pressure_threshold"] {
+		s.QueueEvent(NewEvent_EmergencyMSSVReleased().ScheduleAt(s.CurrentMoment()))
+		sl.steamPressure -= 2.0 // MPa; arbitrary value TODO: use a more realistic value
+		newTemperature := InterpolateFromGivenPressure(sl.steamPressure)
+		sl.steamTemperature = newTemperature.Temperature
 
-	// if env.PowerOn {
-	// 	// TODO: figure out less awkward way to adjust sub-components
-	// 	if sl.openPowerOperatedReliefValve {
-	// 		sl.steamPressure = sl.targetSteamPressure
-	// 		sl.powerOperatedReliefValveOpened = true
-	// 		sl.openPowerOperatedReliefValve = false
-	// 	} else {
-	// 		sl.powerOperatedReliefValveOpened = false
-	// 	}
+		// Log the pressure release and temperature change
+		fmt.Printf("Emergency MSSV released. Pressure dropped to %.2f MPa. Temperature adjusted to %.2f °C", sl.steamPressure, sl.steamTemperature)
 
-	// adjust feedwater temperature as needed
-	// 	if sl.feedheatersOn && sl.feedwaterTemperature < Config["secondary_loop"]["heated_feedwater_temperature"] {
-	// 		// increase temperature by 10 degree per minute until target is reached
-	// 		sl.feedwaterTemperature += math.Min(Config["secondary_loop"]["heated_feedwater_temperature"]-sl.feedwaterTemperature, 0.5)
-	// 	} else if !sl.feedheatersOn && sl.feedwaterTemperature > Config["secondary_loop"]["base_feedwater_temperature"] {
-	// 		// decrease temperature by 10 degree per minute until base is reached
-	// 		sl.feedwaterTemperature -= math.Min(sl.feedwaterTemperature-Config["secondary_loop"]["base_feedwater_temperature"], 0.5)
-	// 	}
-	// } else {
-	// 	sl.SwitchOffFeedwaterPump()
-	// 	sl.SwitchOffFeedheaters()
-	// }
+		// FIXME: pressure has to drop; temperature, too
+	}
+
+	if sl.feedwaterPumpOn {
+		targetFeedwaterFlowRate := Config["secondary_loop"]["feedwater_flow_rate_target"]
+		if sl.feedwaterFlowRate < targetFeedwaterFlowRate {
+			flowStepUp := Config["secondary_loop"]["feedwater_flow_rate_step_up"]
+			sl.feedwaterFlowRate += math.Min(targetFeedwaterFlowRate-sl.feedwaterFlowRate, flowStepUp)
+		} else {
+			sl.feedwaterFlowRate = targetFeedwaterFlowRate
+		}
+	} else {
+		if sl.feedwaterFlowRate > 0.0 {
+			flowStepDown := Config["secondary_loop"]["feedwater_flow_rate_step_down"]
+			sl.feedwaterFlowRate -= math.Min(sl.feedwaterFlowRate, flowStepDown)
+		} else {
+			sl.feedwaterFlowRate = 0.0
+		}
+	}
+
+	// automatic feedwater adjustments
+	if sl.feedheatersOn {
+		targetTemperature := Config["secondary_loop"]["heated_feedwater_temperature"]
+		if sl.feedwaterTemperatureOut < targetTemperature {
+			feedheaterTempStepUp := Config["secondary_loop"]["feedheater_step_up"]
+			sl.feedwaterTemperatureOut += math.Min(targetTemperature-sl.feedwaterTemperatureOut, feedheaterTempStepUp)
+		} else if sl.feedwaterTemperatureOut > targetTemperature {
+			sl.feedwaterTemperatureOut = targetTemperature
+		}
+	} else {
+		if sl.feedwaterTemperatureOut > sl.feedwaterTemperatureIn {
+			feedheaterTempStepDown := Config["secondary_loop"]["feedheater_step_down"]
+			sl.feedwaterTemperatureOut -= math.Min(sl.feedwaterTemperatureOut-sl.feedwaterTemperatureIn, feedheaterTempStepDown)
+		} else {
+			sl.feedwaterTemperatureOut = sl.feedwaterTemperatureIn
+		}
+	}
+
+	// TODO: deal with power outages here and in general
 
 	return sl.Status(), nil
 }
 
-func (sl *SecondaryLoop) OpenPowerOperatedReliefValue(targetPressure float64) {
+func (sl *SecondaryLoop) processInstantEvent(event *simworks.Event) {
+	switch event.Code {
+	case Event_sl_feedwaterPumpSwitch:
+		sl.SwitchFeedwaterPump(event.Truthy())
+	case Event_sl_feedheatersSwitch:
+		sl.SwitchFeedheaters(event.Truthy())
+	case Event_sl_powerOperatedReliefValve:
+		sl.PowerOperatedReliefValve(event.Truthy())
+	}
 }
 
-func (sl *SecondaryLoop) EmergencyMSSVReleased() bool {
-	return true
-}
-
-func (sl *SecondaryLoop) SwitchOnFeedwaterPump() {
-	sl.feedwaterPumpOn = true
-	sl.feedwaterFlowRate = 2.0 // Reset to default flow rate when switched on
-}
-
-func (sl *SecondaryLoop) SwitchOffFeedwaterPump() {
-	sl.feedwaterPumpOn = false
-	sl.feedwaterFlowRate = 0.0 // No flow when pump is off
-}
-
-func (sl *SecondaryLoop) AdjustFeedwaterFlowRate(rate float64) {
-	if !sl.feedwaterPumpOn {
-		fmt.Println("Cannot adjust flow rate. Feedwater pump is off.")
+func (pl *SecondaryLoop) processGradualEvent(event *simworks.Event) {
+	switch event.Code {
+	default:
 		return
 	}
-	if rate < 0 {
-		fmt.Println("Flow rate cannot be negative. Setting to 0.")
-		sl.feedwaterFlowRate = 0
+}
+
+func (sl *SecondaryLoop) SwitchFeedwaterPump(on bool) {
+	if on {
+		sl.feedwaterPumpOn = true
 	} else {
-		sl.feedwaterFlowRate = rate
+		sl.feedwaterPumpOn = false
 	}
 }
 
-func (sl *SecondaryLoop) SwitchOnFeedheaters() {
-	sl.feedheatersOn = true
-	// Optionally, we could add some logic here to gradually increase the temperature
-	// of the feedwater over time, simulating the heating process.
-	// For example:
-	// sl.returnWaterTemperature += 10 // Increase temperature by 10 degrees
-	// This would depend on how often this method is called and how we want to model the heating process.
+func (sl *SecondaryLoop) SwitchFeedheaters(on bool) {
+	if on {
+		sl.feedheatersOn = true
+	} else {
+		sl.feedheatersOn = false
+	}
 }
 
-func (sl *SecondaryLoop) SwitchOffFeedheaters() {
-	sl.feedheatersOn = false
-	// Similarly, we could add logic here to gradually decrease the temperature
-	// of the feedwater over time, simulating the cooling process when heaters are off.
+func (sl *SecondaryLoop) PowerOperatedReliefValve(open bool) {
+	if open {
+		sl.powerOperatedReliefValveOpen = true
+	} else {
+		sl.powerOperatedReliefValveOpen = false
+	}
 }

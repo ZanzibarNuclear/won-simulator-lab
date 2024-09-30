@@ -24,10 +24,15 @@ var PressurizerConfig = map[string]float64{
 }
 
 var SecondaryLoopConfig = map[string]float64{
-	"ideal_steam_temperature":      285.0,
-	"mssv_pressure_threshold":      8.0,
-	"base_feedwater_temperature":   40.0,
-	"heated_feedwater_temperature": 80.0,
+	"ideal_steam_temperature":       285.0,
+	"mssv_pressure_threshold":       8.0,
+	"base_feedwater_temperature":    40.0,
+	"heated_feedwater_temperature":  80.0,
+	"feedheater_step_up":            1.25,
+	"feedheater_step_down":          2.5,
+	"feedwater_flow_rate_target":    20.0,
+	"feedwater_flow_rate_step_up":   0.8,
+	"feedwater_flow_rate_step_down": 1.5,
 }
 
 var Config = map[string]map[string]float64{
