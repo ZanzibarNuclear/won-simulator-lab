@@ -2,6 +2,7 @@ package pwr
 
 import (
 	"fmt"
+	"math"
 
 	"worldofnuclear.com/internal/simworks"
 )
@@ -40,4 +41,18 @@ func (s *PwrSim) ProcessEvent(event *simworks.Event) {
 		fmt.Println("Event code not handled:", event.Code)
 	}
 
+}
+
+func CalcLinearIncrease(currentValue, targetValue, stepSize float64) float64 {
+	if currentValue < targetValue {
+		return currentValue + math.Min(targetValue-currentValue, stepSize)
+	}
+	return targetValue
+}
+
+func CalcLinearDecrease(currentValue, targetValue, stepSize float64) float64 {
+	if currentValue > targetValue {
+		return currentValue - math.Min(currentValue-targetValue, stepSize)
+	}
+	return targetValue
 }

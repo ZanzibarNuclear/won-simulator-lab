@@ -2,7 +2,6 @@ package pwr
 
 import (
 	"fmt"
-	"math"
 
 	"worldofnuclear.com/internal/simworks"
 )
@@ -168,38 +167,16 @@ func (sl *SecondaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, 
 	}
 
 	if sl.feedwaterPumpOn {
-		targetFeedwaterFlowRate := Config["secondary_loop"]["feedwater_flow_rate_target"]
-		if sl.feedwaterFlowRate < targetFeedwaterFlowRate {
-			flowStepUp := Config["secondary_loop"]["feedwater_flow_rate_step_up"]
-			sl.feedwaterFlowRate += math.Min(targetFeedwaterFlowRate-sl.feedwaterFlowRate, flowStepUp)
-		} else {
-			sl.feedwaterFlowRate = targetFeedwaterFlowRate
-		}
+		sl.feedwaterFlowRate = CalcLinearIncrease(sl.feedwaterFlowRate, Config["secondary_loop"]["feedwater_flow_rate_target"], Config["secondary_loop"]["feedwater_flow_rate_step_up"])
 	} else {
-		if sl.feedwaterFlowRate > 0.0 {
-			flowStepDown := Config["secondary_loop"]["feedwater_flow_rate_step_down"]
-			sl.feedwaterFlowRate -= math.Min(sl.feedwaterFlowRate, flowStepDown)
-		} else {
-			sl.feedwaterFlowRate = 0.0
-		}
+		sl.feedwaterFlowRate = CalcLinearDecrease(sl.feedwaterFlowRate, 0.0, Config["secondary_loop"]["feedwater_flow_rate_step_down"])
 	}
 
 	// automatic feedwater adjustments
 	if sl.feedheatersOn {
-		targetTemperature := Config["secondary_loop"]["heated_feedwater_temperature"]
-		if sl.feedwaterTemperatureOut < targetTemperature {
-			feedheaterTempStepUp := Config["secondary_loop"]["feedheater_step_up"]
-			sl.feedwaterTemperatureOut += math.Min(targetTemperature-sl.feedwaterTemperatureOut, feedheaterTempStepUp)
-		} else if sl.feedwaterTemperatureOut > targetTemperature {
-			sl.feedwaterTemperatureOut = targetTemperature
-		}
+		sl.feedwaterTemperatureOut = CalcLinearIncrease(sl.feedwaterTemperatureOut, Config["secondary_loop"]["heated_feedwater_temperature"], Config["secondary_loop"]["feedheater_step_up"])
 	} else {
-		if sl.feedwaterTemperatureOut > sl.feedwaterTemperatureIn {
-			feedheaterTempStepDown := Config["secondary_loop"]["feedheater_step_down"]
-			sl.feedwaterTemperatureOut -= math.Min(sl.feedwaterTemperatureOut-sl.feedwaterTemperatureIn, feedheaterTempStepDown)
-		} else {
-			sl.feedwaterTemperatureOut = sl.feedwaterTemperatureIn
-		}
+		sl.feedwaterTemperatureOut = CalcLinearDecrease(sl.feedwaterTemperatureOut, sl.feedwaterTemperatureIn, Config["secondary_loop"]["feedheater_step_down"])
 	}
 
 	// TODO: deal with power outages here and in general
