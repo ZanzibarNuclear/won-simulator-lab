@@ -15,7 +15,7 @@ const (
 	Event_sl_feedwaterPumpSwitch      = "secondary_loop.feedwater_pump.switch"
 	Event_sl_feedheatersSwitch        = "secondary_loop.feedheaters.switch"
 	Event_sl_powerOperatedReliefValve = "secondary_loop.power_operated_relief_valve.switch"
-	Event_sl_emergencyMSSVReleased    = "secondary_loop.emergency_mssv.released"
+	Event_sl_emergencyMssvVent        = "secondary_loop.emergency_mssv.vented"
 )
 
 func NewEvent_PumpSwitch(on bool) *simworks.Event {
@@ -50,10 +50,10 @@ func NewEvent_FeedheatersSwitch(on bool) *simworks.Event {
 	return simworks.NewImmediateEventBool(Event_sl_feedheatersSwitch, on)
 }
 
-func NewEvent_PowerOperatedReliefValveSwitch(on bool) *simworks.Event {
-	return simworks.NewImmediateEventBool(Event_sl_powerOperatedReliefValve, on)
+func NewEvent_PowerOperatedReliefValveSwitch(open bool) *simworks.Event {
+	return simworks.NewImmediateEventBool(Event_sl_powerOperatedReliefValve, open)
 }
 
-func NewEvent_EmergencyMSSVReleased() *simworks.Event {
-	return simworks.NewImmediateEvent(Event_sl_emergencyMSSVReleased)
+func NewEvent_EmergencyMssvVent() *simworks.Event {
+	return simworks.NewImmediateEvent(Event_sl_emergencyMssvVent)
 }

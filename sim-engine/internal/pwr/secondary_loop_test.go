@@ -143,7 +143,7 @@ func TestSecondaryLoop_MssvVentEvent(t *testing.T) {
 	var mssvVentEvent *simworks.Event
 	for _, event := range s.InactiveEvents {
 		// t.Logf("Inactive event: %v", event)
-		if event.Code == Event_sl_emergencyMSSVReleased {
+		if event.Code == Event_sl_emergencyMssvVent {
 			mssvVentEvent = event
 			break
 		}

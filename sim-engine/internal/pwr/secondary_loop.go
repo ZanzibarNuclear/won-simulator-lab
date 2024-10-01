@@ -160,7 +160,7 @@ func (sl *SecondaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, 
 
 	// vent steam when pressure is too high
 	if sl.steamPressure > Config["secondary_loop"]["mssv_pressure_threshold"] {
-		s.QueueEvent(NewEvent_EmergencyMSSVReleased().ScheduleAt(s.CurrentMoment()))
+		s.QueueEvent(NewEvent_EmergencyMssvVent().ScheduleAt(s.CurrentMoment()))
 		sl.steamPressure -= 0.5 // MPa; arbitrary value TODO: use a more realistic value
 		newTemperature := InterpolateFromGivenPressure(sl.steamPressure)
 		sl.steamTemperature = newTemperature.Temperature
