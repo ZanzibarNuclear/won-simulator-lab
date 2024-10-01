@@ -45,16 +45,19 @@ func (s *Simulator) Run(seconds int) {
 	results := make(map[string]interface{})
 	for i := 0; i < seconds; i++ {
 		s.Clock.Tick()
+
+		s.ProgressDueEvents()
+
 		for _, component := range s.Components {
 			status, _ := component.Update(s)
 			results[component.ID()] = status
 		}
-	}
 
-	if s.EventHandler != nil {
-		s.ReviewPendingEvents()
+		if s.EventHandler != nil {
+			s.ReviewPendingEvents()
+		}
+		s.TidyUpEvents()
 	}
-	s.TidyUpEvents()
 
 	results["general"] = "TODO"
 	// TODO: decide what to do with results - that's a lot of data
@@ -62,6 +65,14 @@ func (s *Simulator) Run(seconds int) {
 
 func (s *Simulator) Step() {
 	s.Run(1)
+}
+
+func (s *Simulator) ProgressDueEvents() {
+	for _, event := range s.Events {
+		if event.IsPending() && event.IsDue(s.CurrentMoment()) {
+			event.SetInProgress()
+		}
+	}
 }
 
 func (s *Simulator) ReviewPendingEvents() {

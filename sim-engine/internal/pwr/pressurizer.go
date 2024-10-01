@@ -92,20 +92,10 @@ func (p *Pressurizer) Print() {
 func (p *Pressurizer) Update(s *simworks.Simulator) (map[string]interface{}, error) {
 	p.BaseComponent.Update(s)
 
-	for i := range s.Events {
-		event := s.Events[i]
-		if event.IsPending() {
-			if event.IsDue(s.CurrentMoment()) {
-				event.SetInProgress()
-			}
-		}
-
+	// TODO: try to move this to BaseComponent
+	for _, event := range s.Events {
 		if event.IsInProgress() {
-			if event.Immediate {
-				p.processInstantEvent(event)
-			} else {
-				p.processGradualEvent(event)
-			}
+			p.processEvent(event)
 		}
 	}
 
@@ -126,7 +116,7 @@ func (p *Pressurizer) Update(s *simworks.Simulator) (map[string]interface{}, err
 	return p.Status(), nil
 }
 
-func (p *Pressurizer) processInstantEvent(event *simworks.Event) {
+func (p *Pressurizer) processEvent(event *simworks.Event) {
 	switch event.Code {
 	case Event_pr_heaterPower:
 		p.heaterOn = event.Truthy()
@@ -145,13 +135,9 @@ func (p *Pressurizer) processInstantEvent(event *simworks.Event) {
 			p.sprayFlowRate = 0.0
 		}
 		event.SetComplete()
-	}
-}
 
-func (p *Pressurizer) processGradualEvent(event *simworks.Event) {
-	targetValue := event.TargetValue
-	switch event.Code {
 	case Event_pr_targetPressure:
+		targetValue := event.TargetValue
 		p.adjustPressure(targetValue)
 		if p.pressure >= targetValue {
 			p.heaterPower = Config["pressurizer"]["heater_low_power"]

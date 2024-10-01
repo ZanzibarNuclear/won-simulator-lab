@@ -27,7 +27,7 @@ func TestSimulatorDrivesPrimaryLoop(t *testing.T) {
 	}
 }
 
-func TestPumpSwitch(t *testing.T) {
+func TestPrimaryLoop_PumpSwitch(t *testing.T) {
 	pl := NewPrimaryLoop("TestLoop-Pump", "The is a test.")
 	sim := simworks.NewSimulator("Test Sim", "Test Sim")
 	sim.AddComponent(pl)
@@ -62,7 +62,7 @@ func TestPumpSwitch(t *testing.T) {
 	}
 }
 
-func TestAdjustBoronConcentration(t *testing.T) {
+func TestPrimaryLoop_AdjustBoronConcentration(t *testing.T) {
 	pl := NewPrimaryLoop("TestLoop-Pump", "The is a test.")
 	sim := simworks.NewSimulator("Test Sim", "Test Sim")
 	sim.AddComponent(pl)
@@ -96,7 +96,7 @@ func TestAdjustBoronConcentration(t *testing.T) {
 	}
 }
 
-func TestBoronConcentrationWhenPumpInitiallyOff(t *testing.T) {
+func TestPrimaryLoop_BoronConcentrationWhenPumpInitiallyOff(t *testing.T) {
 	pl := NewPrimaryLoop("TestLoop-PumpOff", "This is a test.")
 	sim := simworks.NewSimulator("Test Sim", "Test Sim")
 	sim.AddComponent(pl)

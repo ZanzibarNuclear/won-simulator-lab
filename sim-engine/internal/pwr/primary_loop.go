@@ -110,20 +110,9 @@ func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, er
 	pl.BaseComponent.Update(s)
 
 	// TODO: try to move this to BaseComponent
-	for i := range s.Events {
-		event := s.Events[i]
-		if event.IsPending() {
-			if event.IsDue(s.CurrentMoment()) {
-				event.SetInProgress()
-			}
-		}
-
+	for _, event := range s.Events {
 		if event.IsInProgress() {
-			if event.Immediate {
-				pl.processInstantEvent(event)
-			} else {
-				pl.processGradualEvent(event)
-			}
+			pl.processEvent(event)
 		}
 	}
 
@@ -132,10 +121,10 @@ func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, er
 	return pl.Status(), nil
 }
 
-func (pl *PrimaryLoop) processInstantEvent(event *simworks.Event) {
+func (pl *PrimaryLoop) processEvent(event *simworks.Event) {
 	switch event.Code {
 	case Event_pl_pumpSwitch:
-		pl.switchPump(event.Truthy())
+		pl.pumpOn = event.Truthy()
 		if pl.pumpOn {
 			pl.pumpPressure = Config["primary_loop"]["pump_on_pressure"]
 			pl.pumpHeat = Config["primary_loop"]["pump_on_heat"]
@@ -146,22 +135,14 @@ func (pl *PrimaryLoop) processInstantEvent(event *simworks.Event) {
 			pl.flowRate = Config["primary_loop"]["pump_off_flow_rate"]
 		}
 		event.SetComplete()
-	}
-}
 
-func (pl *PrimaryLoop) processGradualEvent(event *simworks.Event) {
-	targetValue := event.TargetValue
-	switch event.Code {
 	case Event_pl_boronConcentration:
+		targetValue := event.TargetValue
 		pl.adjustBoron(targetValue)
 		if pl.boronConcentration == targetValue {
 			event.SetComplete()
 		}
 	}
-}
-
-func (pl *PrimaryLoop) switchPump(on bool) {
-	pl.pumpOn = on
 }
 
 func (pl *PrimaryLoop) adjustBoron(targetValue float64) {

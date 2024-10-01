@@ -138,20 +138,9 @@ func (sl *SecondaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, 
 	sl.BaseComponent.Update(s)
 
 	// TODO: try to move this to BaseComponent
-	for i := range s.Events {
-		event := s.Events[i]
-		if event.IsPending() {
-			if event.IsDue(s.CurrentMoment()) {
-				event.SetInProgress()
-			}
-		}
-
+	for _, event := range s.Events {
 		if event.IsInProgress() {
-			if event.Immediate {
-				sl.processInstantEvent(event)
-			} else {
-				sl.processGradualEvent(event)
-			}
+			sl.processEvent(event)
 		}
 	}
 
@@ -195,7 +184,7 @@ func (sl *SecondaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, 
 	return sl.Status(), nil
 }
 
-func (sl *SecondaryLoop) processInstantEvent(event *simworks.Event) {
+func (sl *SecondaryLoop) processEvent(event *simworks.Event) {
 	switch event.Code {
 	case Event_sl_feedwaterPumpSwitch:
 		sl.SwitchFeedwaterPump(event.Truthy())
@@ -203,13 +192,6 @@ func (sl *SecondaryLoop) processInstantEvent(event *simworks.Event) {
 		sl.SwitchFeedheaters(event.Truthy())
 	case Event_sl_powerOperatedReliefValve:
 		sl.PowerOperatedReliefValve(event.Truthy())
-	}
-}
-
-func (pl *SecondaryLoop) processGradualEvent(event *simworks.Event) {
-	switch event.Code {
-	default:
-		return
 	}
 }
 

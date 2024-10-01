@@ -41,7 +41,7 @@ func TestNewPressurizerDefaults(t *testing.T) {
 	}
 }
 
-func TestHeaterPowerEvent(t *testing.T) {
+func TestPressurizer_HeaterPowerEvent(t *testing.T) {
 	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
 	pwrSim := NewPwrSim("Test PWR", "Heater power test simulation")
 	pwrSim.AddComponent(p)
@@ -76,7 +76,7 @@ func TestHeaterPowerEvent(t *testing.T) {
 	}
 }
 
-func TestSprayNozzleEvent(t *testing.T) {
+func TestPressurizer_SprayNozzleEvent(t *testing.T) {
 	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
 	pwrSim := NewPwrSim("Test PWR", "Spray nozzle test simulation")
 	pwrSim.AddComponent(p)
@@ -128,7 +128,7 @@ func TestSprayNozzleEvent(t *testing.T) {
 	}
 }
 
-func TestSetPressureEvent(t *testing.T) {
+func TestPressurizer_SetPressureEvent(t *testing.T) {
 	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
 	pwrSim := NewPwrSim("Test PWR", "We test so you don't have to.")
 	pwrSim.AddComponent(p)
@@ -162,7 +162,7 @@ func TestSetPressureEvent(t *testing.T) {
 	}
 }
 
-func TestReliefValveVentEvent(t *testing.T) {
+func TestPressurizer_ReliefValveVentEvent(t *testing.T) {
 	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
 	pwrSim := NewPwrSim("Test PWR", "Relief valve vent test simulation")
 	pwrSim.AddComponent(p)
@@ -196,13 +196,6 @@ func TestReliefValveVentEvent(t *testing.T) {
 	}
 
 	pwrSim.RunForABit(0, 0, 1, 2)
-	// t.Logf("Pressurizer status: %v", p.Status())
-	// for _, event := range pwrSim.Events {
-	// 	t.Logf("Event: %v", event)
-	// }
-	// for _, event := range pwrSim.InactiveEvents {
-	// 	t.Logf("Inactive event: %v", event)
-	// }
 
 	if len(pwrSim.InactiveEvents) != 2 {
 		t.Errorf("Expected 2 inactive event at this point, got %d", len(pwrSim.InactiveEvents))
