@@ -35,12 +35,20 @@ var SecondaryLoopConfig = map[string]float64{
 	"feedwater_flow_rate_step_down": 1.5,
 }
 
+var SteamTurbineConfig = map[string]float64{
+	"max_rpm":        3600,
+	"efficiency":     0.85,
+	"blade_diameter": 0.6,
+}
+
 var Config = map[string]map[string]float64{
 	"common": {
 		"room_temperature":     20.0,
 		"atmospheric_pressure": 0.101325,
+		"gravity":              9.81,
 	},
 	"primary_loop":   PrimaryLoopConfig,
-	"pressurizer":    PressurizerConfig,
 	"secondary_loop": SecondaryLoopConfig,
+	"pressurizer":    PressurizerConfig,
+	"steam_turbine":  SteamTurbineConfig,
 }
