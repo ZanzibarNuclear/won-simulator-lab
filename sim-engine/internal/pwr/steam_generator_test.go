@@ -3,6 +3,7 @@ package pwr
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"worldofnuclear.com/internal/simworks"
 )
 
@@ -11,22 +12,22 @@ func TestNewSteamGenerator(t *testing.T) {
 	s := simworks.NewSimulator("Test Simulator", "Testing steam generator")
 	s.AddComponent(sg)
 
-	// FIXME: make sure this complains.
-	if sg.Name() != "SG1" {
-		t.Errorf("expected name to be SG1, got %s", sg.Name())
-	}
+	roomTemp := Config["common"]["room_temperature"]
 
-	if sg.Description() != "Test Steam Generator" {
-		t.Errorf("expected description to be 'Test Steam Generator', got %s", sg.Description())
-	}
+	assert.Equal(t, "SG1", sg.Name())
+	assert.Equal(t, "Test Steam Generator", sg.Description())
+	assert.Equal(t, roomTemp, sg.PrimaryInletTemp())
+	assert.Equal(t, roomTemp, sg.PrimaryOutletTemp())
+	assert.Equal(t, roomTemp, sg.SecondaryInletTemp())
+	assert.Equal(t, roomTemp, sg.SecondaryOutletTemp())
+	assert.Equal(t, 0.0, sg.HeatTransferRate())
+	assert.Equal(t, 0.0, sg.SteamFlowRate())
 
 	_, err := sg.Update(s)
-	if err == nil {
-		t.Errorf("Should complain about not having a primary or secondary loop\n")
-	}
+	assert.Error(t, err)
 }
 
-func TestSteamGeneratorStatus(t *testing.T) {
+func TestSteamGenerator_NormalConditions(t *testing.T) {
 	primaryLoop := &PrimaryLoop{}
 	secondaryLoop := &SecondaryLoop{}
 	sg := NewSteamGenerator("SG1", "Test Steam Generator", primaryLoop, secondaryLoop)
@@ -35,66 +36,16 @@ func TestSteamGeneratorStatus(t *testing.T) {
 	s.AddComponent(secondaryLoop)
 	s.AddComponent(sg)
 
-	// FIXME: try to set up normal conditions.
-	status := sg.Status()
+	// set conditions for primary loop
+	primaryLoop.SetHotLegTemperature(325.0)
 
-	if status["primaryInletTemp"] != sg.PrimaryInletTemp() {
-		t.Errorf("expected primaryInletTemp to be %f, got %f", sg.PrimaryInletTemp(), status["primaryInletTemp"])
-	}
+	// set conditions for secondary loop
+	// TODO:
 
-	if status["primaryOutletTemp"] != sg.PrimaryOutletTemp() {
-		t.Errorf("expected primaryOutletTemp to be %f, got %f", sg.PrimaryOutletTemp(), status["primaryOutletTemp"])
-	}
+	s.Step()
 
-	if status["secondaryInletTemp"] != sg.SecondaryInletTemp() {
-		t.Errorf("expected secondaryInletTemp to be %f, got %f", sg.SecondaryInletTemp(), status["secondaryInletTemp"])
-	}
+	// TODO: check that primary inlet matches hot leg temperature
+	// TODO: check cold leg temperature is between room temp and 325.0
 
-	if status["secondaryOutletTemp"] != sg.SecondaryOutletTemp() {
-		t.Errorf("expected secondaryOutletTemp to be %f, got %f", sg.SecondaryOutletTemp(), status["secondaryOutletTemp"])
-	}
-
-	if status["heatTransferRate"] != sg.HeatTransferRate() {
-		t.Errorf("expected heatTransferRate to be %f, got %f", sg.HeatTransferRate(), status["heatTransferRate"])
-	}
-
-	if status["steamFlowRate"] != sg.SteamFlowRate() {
-		t.Errorf("expected steamFlowRate to be %f, got %f", sg.SteamFlowRate(), status["steamFlowRate"])
-	}
-}
-
-func TestSteamGeneratorUpdate(t *testing.T) {
-	primaryLoop := &PrimaryLoop{}
-	secondaryLoop := &SecondaryLoop{}
-	sg := NewSteamGenerator("SG1", "Test Steam Generator", primaryLoop, secondaryLoop)
-	simulator := &simworks.Simulator{}
-
-	status, err := sg.Update(simulator)
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
-
-	if status["primaryInletTemp"] != sg.PrimaryInletTemp() {
-		t.Errorf("expected primaryInletTemp to be %f, got %f", sg.PrimaryInletTemp(), status["primaryInletTemp"])
-	}
-
-	if status["primaryOutletTemp"] != sg.PrimaryOutletTemp() {
-		t.Errorf("expected primaryOutletTemp to be %f, got %f", sg.PrimaryOutletTemp(), status["primaryOutletTemp"])
-	}
-
-	if status["secondaryInletTemp"] != sg.SecondaryInletTemp() {
-		t.Errorf("expected secondaryInletTemp to be %f, got %f", sg.SecondaryInletTemp(), status["secondaryInletTemp"])
-	}
-
-	if status["secondaryOutletTemp"] != sg.SecondaryOutletTemp() {
-		t.Errorf("expected secondaryOutletTemp to be %f, got %f", sg.SecondaryOutletTemp(), status["secondaryOutletTemp"])
-	}
-
-	if status["heatTransferRate"] != sg.HeatTransferRate() {
-		t.Errorf("expected heatTransferRate to be %f, got %f", sg.HeatTransferRate(), status["heatTransferRate"])
-	}
-
-	if status["steamFlowRate"] != sg.SteamFlowRate() {
-		t.Errorf("expected steamFlowRate to be %f, got %f", sg.SteamFlowRate(), status["steamFlowRate"])
-	}
+	assert.Fail(t, "Not implemented")
 }

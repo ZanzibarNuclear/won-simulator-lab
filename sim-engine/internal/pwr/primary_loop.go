@@ -67,12 +67,20 @@ func (pl *PrimaryLoop) HotLegTemperature() float64 {
 	return pl.hotLegTemperature
 }
 
+func (pl *PrimaryLoop) SetHotLegTemperature(temp float64) {
+	pl.hotLegTemperature = temp
+}
+
 func (pl *PrimaryLoop) TemperatureUnit() string {
 	return "˚C"
 }
 
 func (pl *PrimaryLoop) ColdLegTemperature() float64 {
 	return pl.coldLegTemperature
+}
+
+func (pl *PrimaryLoop) SetColdLegTemperature(temp float64) {
+	pl.coldLegTemperature = temp
 }
 
 func (pl *PrimaryLoop) Status() map[string]interface{} {
