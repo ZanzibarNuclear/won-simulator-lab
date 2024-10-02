@@ -136,8 +136,6 @@ func (sl *SecondaryLoop) Print() {
 
 func (sl *SecondaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, error) {
 	sl.BaseComponent.Update(s)
-
-	// TODO: try to move this to BaseComponent
 	for _, event := range s.Events {
 		if event.IsInProgress() {
 			sl.processEvent(event)

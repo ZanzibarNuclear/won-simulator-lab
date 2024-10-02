@@ -91,8 +91,6 @@ func (p *Pressurizer) Print() {
 
 func (p *Pressurizer) Update(s *simworks.Simulator) (map[string]interface{}, error) {
 	p.BaseComponent.Update(s)
-
-	// TODO: try to move this to BaseComponent
 	for _, event := range s.Events {
 		if event.IsInProgress() {
 			p.processEvent(event)

@@ -108,8 +108,6 @@ func (pl *PrimaryLoop) Print() {
 
 func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, error) {
 	pl.BaseComponent.Update(s)
-
-	// TODO: try to move this to BaseComponent
 	for _, event := range s.Events {
 		if event.IsInProgress() {
 			pl.processEvent(event)
