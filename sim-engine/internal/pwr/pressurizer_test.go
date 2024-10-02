@@ -3,6 +3,7 @@ package pwr
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"worldofnuclear.com/internal/simworks"
 )
 
@@ -10,35 +11,13 @@ func TestNewPressurizerDefaults(t *testing.T) {
 	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
 
 	// Test default values
-	if len(p.ID()) == 0 {
-		t.Errorf("Expected ID to be non-empty")
-	}
-
-	if p.Name() != "TestPressurizer" {
-		t.Errorf("Expected name to be 'TestPressurizer', got %s", p.Name())
-	}
-
-	if p.Description() != "Test pressurizer description" {
-		t.Errorf("Expected description to be 'Test pressurizer description', got %s", p.Description())
-	}
-
-	expectedPressure := Config["common"]["atmospheric_pressure"]
-	if p.Pressure() != expectedPressure {
-		t.Errorf("Expected default pressure to be %f, got %f", expectedPressure, p.Pressure())
-	}
-
-	expectedTemperature := Config["common"]["room_temperature"]
-	if p.Temperature() != expectedTemperature {
-		t.Errorf("Expected default temperature to be %f, got %f", expectedTemperature, p.Temperature())
-	}
-
-	if p.HeaterOn() {
-		t.Error("Expected heater to be off by default")
-	}
-
-	if p.SprayNozzleOpen() {
-		t.Error("Expected spray nozzle to be closed by default")
-	}
+	assert.NotEmpty(t, p.ID())
+	assert.Equal(t, "TestPressurizer", p.Name())
+	assert.Equal(t, "Test pressurizer description", p.Description())
+	assert.Equal(t, Config["common"]["atmospheric_pressure"], p.Pressure())
+	assert.Equal(t, Config["common"]["room_temperature"], p.Temperature())
+	assert.False(t, p.HeaterOn())
+	assert.False(t, p.SprayNozzleOpen())
 }
 
 func TestPressurizer_HeaterPowerEvent(t *testing.T) {
@@ -47,33 +26,23 @@ func TestPressurizer_HeaterPowerEvent(t *testing.T) {
 	pwrSim.AddComponent(p)
 
 	// Initially, the heater should be off
-	if p.HeaterOn() {
-		t.Error("Expected heater to be off initially")
-	}
+	assert.False(t, p.HeaterOn())
 
 	// Create and queue the event to turn the heater on
 	eventToWatch := NewEvent_HeaterPower(true)
 	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.Step()
 
-	if !p.HeaterOn() {
-		t.Error("Expected heater to be on after the event")
-	}
-	if !eventToWatch.IsComplete() {
-		t.Error("HeaterPowerEvent should be completed after one step")
-	}
+	assert.True(t, p.HeaterOn())
+	assert.True(t, eventToWatch.IsComplete())
 
 	// Now test turning the heater off
 	eventToWatch = NewEvent_HeaterPower(false)
 	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.Step()
 
-	if p.HeaterOn() {
-		t.Error("Expected heater to be off after the second event")
-	}
-	if !eventToWatch.IsComplete() {
-		t.Error("HeaterPowerEvent (turn off) should be completed after one step")
-	}
+	assert.False(t, p.HeaterOn())
+	assert.True(t, eventToWatch.IsComplete())
 }
 
 func TestPressurizer_SprayNozzleEvent(t *testing.T) {
@@ -82,50 +51,35 @@ func TestPressurizer_SprayNozzleEvent(t *testing.T) {
 	pwrSim.AddComponent(p)
 
 	// Initially, the spray nozzle should be closed
-	if p.SprayNozzleOpen() {
-		t.Error("Expected spray nozzle to be closed initially")
-	}
+	assert.False(t, p.SprayNozzleOpen())
+	assert.Equal(t, 0.0, p.SprayFlowRate())
 
 	// Create and queue the event to open the spray nozzle
 	eventToWatch := NewEvent_SprayNozzle(true)
 	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.Step()
 
-	if !p.SprayNozzleOpen() {
-		t.Error("Expected spray nozzle to be open after the event")
-	}
-	if p.SprayFlowRate() == 0.0 {
-		t.Error("Expected spray flow rate to be non-zero when nozzle is open")
-	}
+	assert.True(t, p.SprayNozzleOpen())
+	assert.Equal(t, Config["pressurizer"]["spray_flow_rate"], p.SprayFlowRate())
+	assert.True(t, eventToWatch.IsComplete())
+
+	// Now test closing the spray nozzle
 	if !eventToWatch.IsComplete() {
 		t.Error("SprayNozzleEvent should be completed after one step")
 	}
 
 	// Check if spray flow rate is set correctly
 	expectedSprayFlowRate := Config["pressurizer"]["spray_flow_rate"]
-	if p.SprayFlowRate() != expectedSprayFlowRate {
-		t.Errorf("Expected spray flow rate to be %f, got %f", expectedSprayFlowRate, p.SprayFlowRate())
-	}
+	assert.Equal(t, expectedSprayFlowRate, p.SprayFlowRate())
 
 	// Now test closing the spray nozzle
 	eventToWatch = NewEvent_SprayNozzle(false)
 	pwrSim.QueueEvent(eventToWatch)
 	pwrSim.Step()
 
-	if p.SprayNozzleOpen() {
-		t.Error("Expected spray nozzle to be closed after the second event")
-	}
-	if p.SprayFlowRate() != 0.0 {
-		t.Errorf("Expected spray flow rate to be 0.0 when nozzle is closed, got %f", p.SprayFlowRate())
-	}
-	if !eventToWatch.IsComplete() {
-		t.Error("SprayNozzleEvent (close) should be completed after one step")
-	}
-
-	// Check if spray flow rate is zero when nozzle is closed
-	if p.SprayFlowRate() != 0.0 {
-		t.Errorf("Expected spray flow rate to be 0.0 when nozzle is closed, got %f", p.SprayFlowRate())
-	}
+	assert.False(t, p.SprayNozzleOpen())
+	assert.Equal(t, 0.0, p.SprayFlowRate())
+	assert.True(t, eventToWatch.IsComplete())
 }
 
 func TestPressurizer_SetPressureEvent(t *testing.T) {
@@ -148,18 +102,10 @@ func TestPressurizer_SetPressureEvent(t *testing.T) {
 
 	pwrSim.RunForABit(1, 0, 0, 0)
 
-	if p.Pressure() == initialPressure {
-		t.Errorf("Pressure did not change. Expected it to move towards %f, but got %f", targetPressure, p.Pressure())
-	}
-	if p.Pressure() < targetPressure {
-		t.Errorf("Pressure did not reach target. Expected %f, got %f", targetPressure, p.Pressure())
-	}
-	if !eventToWatch.IsComplete() {
-		t.Error("Event should be completed after reaching target pressure")
-	}
-	if eventToWatch.IsComplete() && !p.HeaterOnLow() {
-		t.Error("Heater should be on low power after reaching target pressure")
-	}
+	assert.NotEqual(t, initialPressure, p.Pressure())
+	assert.True(t, p.Pressure() >= targetPressure)
+	assert.True(t, eventToWatch.IsComplete())
+	assert.True(t, p.HeaterOnLow())
 }
 
 func TestPressurizer_ReliefValveVentEvent(t *testing.T) {
@@ -177,30 +123,18 @@ func TestPressurizer_ReliefValveVentEvent(t *testing.T) {
 	pwrSim.QueueEvent(heaterEvent)
 	pwrSim.Step()
 
-	if !pressureEvent.IsInProgress() {
-		t.Error("Pressure event should be in progress")
-	}
-	if !heaterEvent.IsComplete() {
-		t.Error("Heater event should be complete")
-	}
+	assert.True(t, pressureEvent.IsInProgress())
+	assert.True(t, heaterEvent.IsComplete())
 
 	pwrSim.RunForABit(0, 0, 0, 5)
 
-	if len(pwrSim.Events) > 1 {
-		t.Errorf("Expected 1 event at this point, got %d", len(pwrSim.Events))
-		return
-	}
-	if len(pwrSim.InactiveEvents) != 1 {
-		t.Errorf("Expected 1 inactive event at this point, got %d", len(pwrSim.InactiveEvents))
-		return
-	}
+	assert.Equal(t, 1, len(pwrSim.Events))
+	assert.Equal(t, 1, len(pwrSim.InactiveEvents))
 
 	pwrSim.RunForABit(0, 0, 1, 2)
 
-	if len(pwrSim.InactiveEvents) != 2 {
-		t.Errorf("Expected 2 inactive event at this point, got %d", len(pwrSim.InactiveEvents))
-		return
-	}
+	assert.Equal(t, 1, len(pwrSim.Events))
+	assert.Equal(t, 2, len(pwrSim.InactiveEvents))
 
 	// Find the relief valve event in InactiveEvents
 	var reliefValveEvent *simworks.Event
@@ -212,11 +146,6 @@ func TestPressurizer_ReliefValveVentEvent(t *testing.T) {
 		}
 	}
 
-	if reliefValveEvent == nil {
-		t.Error("Relief valve vent event not found in InactiveEvents")
-		return
-	}
-	if !reliefValveEvent.IsComplete() {
-		t.Error("Relief valve vent event should have been processed by simulator")
-	}
+	assert.NotNil(t, reliefValveEvent)
+	assert.True(t, reliefValveEvent.IsComplete())
 }
