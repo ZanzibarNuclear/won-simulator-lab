@@ -16,6 +16,8 @@ const (
 	Event_sl_feedheatersSwitch        = "secondary_loop.feedheaters.switch"
 	Event_sl_powerOperatedReliefValve = "secondary_loop.power_operated_relief_valve.switch"
 	Event_sl_emergencyMssvVent        = "secondary_loop.emergency_mssv.vented"
+	Event_g_connectToGrid             = "generator.connect_to_grid"
+	Event_g_connectToGridFailure      = "generator.connect_to_grid.failed"
 )
 
 func NewEvent_PumpSwitch(on bool) *simworks.Event {
@@ -56,4 +58,12 @@ func NewEvent_PowerOperatedReliefValveSwitch(open bool) *simworks.Event {
 
 func NewEvent_EmergencyMssvVent() *simworks.Event {
 	return simworks.NewImmediateEvent(Event_sl_emergencyMssvVent)
+}
+
+func NewEvent_ConnectToGrid(connect bool) *simworks.Event {
+	return simworks.NewImmediateEventBool(Event_g_connectToGrid, connect)
+}
+
+func NewEvent_ConnectToGridFailure() *simworks.Event {
+	return simworks.NewImmediateEvent(Event_g_connectToGridFailure)
 }

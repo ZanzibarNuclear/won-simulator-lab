@@ -14,13 +14,13 @@ type SteamTurbine struct {
 	outletPressure float64 // MPa; check secondary loop
 	steamFlowRate  float64 // kg/s; check secondary loop
 	rpm            int     // Revolutions per minute
+	thermalPower   float64 // MW
 	secondaryLoop  *SecondaryLoop
 }
 
 func NewSteamTurbine(name string, description string, secondaryLoop *SecondaryLoop) *SteamTurbine {
 	return &SteamTurbine{
 		BaseComponent: *simworks.NewBaseComponent(name, description),
-		rpm:           0,
 		secondaryLoop: secondaryLoop,
 	}
 }
@@ -53,6 +53,10 @@ func (st *SteamTurbine) Rpm() int {
 	return st.rpm
 }
 
+func (st *SteamTurbine) ThermalPower() float64 {
+	return st.thermalPower
+}
+
 func (st *SteamTurbine) Status() map[string]interface{} {
 	return map[string]interface{}{
 		"about":          st.BaseComponent.Status(),
@@ -63,6 +67,7 @@ func (st *SteamTurbine) Status() map[string]interface{} {
 		"bladeDiameter":  st.BladeDiameter(),
 		"efficiency":     st.Efficiency(),
 		"maxRPM":         st.MaxRPM(),
+		"thermalPower":   st.ThermalPower(),
 	}
 }
 
@@ -76,6 +81,7 @@ func (st *SteamTurbine) Print() {
 	fmt.Printf("Blade diameter: %.2f m\n", st.BladeDiameter())
 	fmt.Printf("Efficiency: %.2f\n", st.Efficiency())
 	fmt.Printf("Max RPM: %d\n", st.MaxRPM())
+	fmt.Printf("Thermal Power: %.2f MW\n", st.ThermalPower())
 }
 
 func (st *SteamTurbine) Update(s *simworks.Simulator) (map[string]interface{}, error) {
@@ -94,7 +100,7 @@ func (st *SteamTurbine) Update(s *simworks.Simulator) (map[string]interface{}, e
 	// st.outletPressure = st.secondaryLoop.steamPressure - (st.secondaryLoop.steamFlowRate * 1000) // FIXME: use a more accurate model
 
 	st.rpm = st.CalculateRPM()
-
+	st.thermalPower = 150.0 // FIXME: derive from turbine movement?? or use typical PWR values
 	return st.Status(), nil
 }
 

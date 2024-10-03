@@ -1,8 +1,9 @@
 package pwr
 
 import (
-	"math"
 	"testing"
+
+	"worldofnuclear.com/internal/simworks"
 )
 
 func TestInterpolateSteamProperties(t *testing.T) {
@@ -36,17 +37,13 @@ func TestInterpolateSteamProperties(t *testing.T) {
 	for _, tc := range testCases {
 		result := InterpolateSteamProperties(tc.temperature)
 
-		if !almostEqual(result.Temperature, tc.expected.Temperature, tc.tolerance) ||
-			!almostEqual(result.Pressure, tc.expected.Pressure, tc.tolerance) ||
-			!almostEqual(result.SpecificVolume, tc.expected.SpecificVolume, tc.tolerance) ||
-			!almostEqual(result.Enthalpy, tc.expected.Enthalpy, tc.tolerance) {
+		if !simworks.AlmostEqual(result.Temperature, tc.expected.Temperature, tc.tolerance) ||
+			!simworks.AlmostEqual(result.Pressure, tc.expected.Pressure, tc.tolerance) ||
+			!simworks.AlmostEqual(result.SpecificVolume, tc.expected.SpecificVolume, tc.tolerance) ||
+			!simworks.AlmostEqual(result.Enthalpy, tc.expected.Enthalpy, tc.tolerance) {
 			t.Errorf("For temperature %.2f°C, expected %+v, but got %+v", tc.temperature, tc.expected, result)
 		}
 	}
-}
-
-func almostEqual(a, b, tolerance float64) bool {
-	return math.Abs(a-b) <= tolerance
 }
 
 func TestInterpolateFromGivenPressure(t *testing.T) {
@@ -80,10 +77,10 @@ func TestInterpolateFromGivenPressure(t *testing.T) {
 	for _, tc := range testCases {
 		result := InterpolateFromGivenPressure(tc.pressure)
 
-		if !almostEqual(result.Temperature, tc.expected.Temperature, tc.tolerance) ||
-			!almostEqual(result.Pressure, tc.expected.Pressure, tc.tolerance) ||
-			!almostEqual(result.SpecificVolume, tc.expected.SpecificVolume, tc.tolerance) ||
-			!almostEqual(result.Enthalpy, tc.expected.Enthalpy, tc.tolerance) {
+		if !simworks.AlmostEqual(result.Temperature, tc.expected.Temperature, tc.tolerance) ||
+			!simworks.AlmostEqual(result.Pressure, tc.expected.Pressure, tc.tolerance) ||
+			!simworks.AlmostEqual(result.SpecificVolume, tc.expected.SpecificVolume, tc.tolerance) ||
+			!simworks.AlmostEqual(result.Enthalpy, tc.expected.Enthalpy, tc.tolerance) {
 			t.Errorf("For pressure %.4f MPa, expected %+v, but got %+v", tc.pressure, tc.expected, result)
 		}
 	}

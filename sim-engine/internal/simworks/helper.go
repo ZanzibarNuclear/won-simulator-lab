@@ -1,6 +1,7 @@
 package simworks
 
 import (
+	"math"
 	"math/rand"
 	"time"
 )
@@ -16,4 +17,8 @@ func GenerateRandomID(length int) string {
 		b[i] = charset[seededRand.Intn(len(charset))]
 	}
 	return string(b)
+}
+
+func AlmostEqual(a, b, tolerance float64) bool {
+	return math.Abs(a-b) <= tolerance
 }

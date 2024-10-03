@@ -18,9 +18,9 @@ type TurbineStage struct {
 
 // TurbineParams holds input parameters for turbine calculations
 type TurbineParams struct {
-	ThrottlePressureMPa      float64
-	ThrottleTempC            float64
-	GeneratorOutputMW        float64
+	ThrottlePressure         float64
+	ThrottleTemp             float64
+	GeneratorOutput          float64
 	MoistureSeparationStages int
 	FeedwaterHeaters         int
 	CondenserType            string
@@ -28,12 +28,12 @@ type TurbineParams struct {
 
 // TurbineResults holds the calculated results
 type TurbineResults struct {
-	Stages               []TurbineStage
-	ExtractionPressures  []float64
-	TotalEfficiency      float64
-	SteamFlowKgS         float64
-	CondenserPressureKPa float64
-	GeneratorOutputMW    float64
+	Stages              []TurbineStage
+	ExtractionPressures []float64 // MPa
+	TotalEfficiency     float64
+	SteamFlow           float64 // kg/s
+	CondenserPressure   float64 // MPa
+	GeneratorOutput     float64 // MW
 }
 
 // Constants for calculations
@@ -55,11 +55,11 @@ func calculatePWRTurbine(params TurbineParams) TurbineResults {
 	var results TurbineResults
 
 	// Convert MPa to Pa for internal calculations
-	throttlePressurePa := params.ThrottlePressureMPa * 1e6
+	throttlePressurePa := params.ThrottlePressure * 1e6
 
 	// Calculate saturation temperature if not provided
-	saturationTemp := math.Min(params.ThrottleTempC,
-		234.0+44.0*math.Log10(params.ThrottlePressureMPa))
+	saturationTemp := math.Min(params.ThrottleTemp,
+		234.0+44.0*math.Log10(params.ThrottlePressure))
 
 	// Initialize stage calculations
 	var stages []TurbineStage
@@ -147,16 +147,16 @@ func calculatePWRTurbine(params TurbineParams) TurbineResults {
 
 	// Calculate steam flow rate
 	enthalpyDrop := 800.0 // kJ/kg
-	steamFlow := (params.GeneratorOutputMW * 1000) / (enthalpyDrop * totalEfficiency)
+	steamFlow := (params.GeneratorOutput * 1000) / (enthalpyDrop * totalEfficiency)
 
 	// Compile results
 	results = TurbineResults{
-		Stages:               stages,
-		ExtractionPressures:  extractionPressures,
-		TotalEfficiency:      totalEfficiency,
-		SteamFlowKgS:         steamFlow,
-		CondenserPressureKPa: condenserPressure / 1000,
-		GeneratorOutputMW:    params.GeneratorOutputMW,
+		Stages:              stages,
+		ExtractionPressures: extractionPressures,
+		TotalEfficiency:     totalEfficiency,
+		SteamFlow:           steamFlow,
+		CondenserPressure:   condenserPressure / 1000,
+		GeneratorOutput:     params.GeneratorOutput,
 	}
 
 	return results
@@ -166,9 +166,9 @@ func printResults(results TurbineResults) {
 	fmt.Println("\nPWR Steam Turbine Analysis")
 	fmt.Println(strings.Repeat("=", 60))
 	fmt.Printf("Total Efficiency: %.1f%%\n", results.TotalEfficiency*100)
-	fmt.Printf("Steam Flow Rate: %.1f kg/s\n", results.SteamFlowKgS)
-	fmt.Printf("Generator Output: %.0f MW\n", results.GeneratorOutputMW)
-	fmt.Printf("Condenser Pressure: %.2f kPa\n", results.CondenserPressureKPa)
+	fmt.Printf("Steam Flow Rate: %.1f kg/s\n", results.SteamFlow)
+	fmt.Printf("Generator Output: %.0f MW\n", results.GeneratorOutput)
+	fmt.Printf("Condenser Pressure: %.2f kPa\n", results.CondenserPressure)
 
 	fmt.Println("\nTurbine Stages:")
 	fmt.Println(strings.Repeat("-", 80))
@@ -188,42 +188,6 @@ func printResults(results TurbineResults) {
 		fmt.Printf("Extraction %d: %.3f MPa\n", i+1, pressure)
 	}
 }
-
-// func readFloat(prompt string, defaultVal float64) float64 {
-// 	reader := bufio.NewReader(os.Stdin)
-// 	fmt.Printf("%s [default %.1f]: ", prompt, defaultVal)
-// 	input, _ := reader.ReadString('\n')
-// 	input = strings.TrimSpace(input)
-
-// 	if input == "" {
-// 		return defaultVal
-// 	}
-
-// 	val, err := strconv.ParseFloat(input, 64)
-// 	if err != nil {
-// 		fmt.Printf("Error parsing input, using default value: %.1f\n", defaultVal)
-// 		return defaultVal
-// 	}
-// 	return val
-// }
-
-// func readInt(prompt string, defaultVal int) int {
-// 	reader := bufio.NewReader(os.Stdin)
-// 	fmt.Printf("%s [default %d]: ", prompt, defaultVal)
-// 	input, _ := reader.ReadString('\n')
-// 	input = strings.TrimSpace(input)
-
-// 	if input == "" {
-// 		return defaultVal
-// 	}
-
-// 	val, err := strconv.Atoi(input)
-// 	if err != nil {
-// 		fmt.Printf("Error parsing input, using default value: %d\n", defaultVal)
-// 		return defaultVal
-// 	}
-// 	return val
-// }
 
 // func main() {
 // 	fmt.Println("PWR Nuclear Power Plant Steam Turbine Calculator")

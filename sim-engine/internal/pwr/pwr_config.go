@@ -1,6 +1,14 @@
 package pwr
 
 // physical constants and typical component settings
+var Common = map[string]float64{
+	"room_temperature":     20.0,
+	"atmospheric_pressure": 0.101325,
+	"gravity":              9.81,
+	"steam_latent_heat":    2.257e6, // J/kg at typical condenser conditions
+	"water_density":        1000.0,  // kg/m³
+	"water_specific_heat":  4186.0,  // J/kg·K
+}
 
 var PrimaryLoopConfig = map[string]float64{
 	"pump_on_pressure":         1.0,
@@ -41,14 +49,20 @@ var SteamTurbineConfig = map[string]float64{
 	"blade_diameter": 0.6,
 }
 
+var GeneratorConfig = map[string]float64{
+	"standard_ac_frequency": 60.0, // Hz
+}
+
+var CondenserConfig = map[string]float64{
+	"surface_area":       40000.0,
+	"thermal_efficiency": 0.33,
+}
+
 var Config = map[string]map[string]float64{
-	"common": {
-		"room_temperature":     20.0,
-		"atmospheric_pressure": 0.101325,
-		"gravity":              9.81,
-	},
+	"common":         Common,
 	"primary_loop":   PrimaryLoopConfig,
 	"secondary_loop": SecondaryLoopConfig,
 	"pressurizer":    PressurizerConfig,
 	"steam_turbine":  SteamTurbineConfig,
+	"generator":      GeneratorConfig,
 }
