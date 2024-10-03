@@ -13,11 +13,14 @@ func main() {
 
 	sim.QueueEvent(pwr.NewEvent_PumpSwitch(true))
 	sim.RunForABit(0, 0, 1, 0)
-	// sim.PrintStatus()
 
 	sim.QueueEvent(pwr.NewEvent_BoronConcentration(300.0))
 	sim.RunForABit(0, 0, 25, 0)
 	// sim.PrintStatus()
+
+	sim.QueueEvent(pwr.NewEvent_FeedwaterPumpSwitch(true))
+	sim.QueueEvent(pwr.NewEvent_FeedheatersSwitch(true))
+	sim.RunForABit(0, 0, 1, 0)
 
 	sim.QueueEvent(pwr.NewEvent_TargetPressure(15.5))
 	sim.QueueEvent(pwr.NewEvent_HeaterPower(true))

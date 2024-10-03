@@ -119,6 +119,7 @@ func (s *Simulator) PrintStatus() {
 	fmt.Printf("=== Simulator %s is running. ===\n  %s\n\n", s.Name, s.Purpose)
 	for _, component := range s.Components {
 		component.Print()
+		fmt.Println("")
 	}
 	fmt.Println("--- Pending and In-Progress Events ---")
 	for _, event := range s.Events {
