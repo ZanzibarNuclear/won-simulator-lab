@@ -120,7 +120,12 @@ func (s *Simulator) PrintStatus() {
 	for _, component := range s.Components {
 		component.Print()
 	}
+	fmt.Println("--- Pending and In-Progress Events ---")
 	for _, event := range s.Events {
+		fmt.Println(event.State())
+	}
+	fmt.Println("--- Inactive Events ---")
+	for _, event := range s.InactiveEvents {
 		fmt.Println(event.State())
 	}
 }

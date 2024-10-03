@@ -202,10 +202,6 @@ func (c *Condenser) Update(s *simworks.Simulator) (map[string]interface{}, error
 				(c.condenserTemperature-(c.coolingWaterTempIn+tempRise)))
 		surfaceArea := heatRejectionW / (uOverall * lmtd)
 
-		// Calculate tube length
-		// tubeLength := surfaceArea / (math.Pi * tubeOD * totalTubes)
-
-		c.coolingWaterFlowRate = c.coolingWaterFlowRate
 		c.heatTransferCoefficient = uOverall
 		c.surfaceArea = surfaceArea
 	}
