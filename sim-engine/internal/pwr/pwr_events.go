@@ -94,10 +94,3 @@ func NewEvent_AdjustGrayRods(position float64) *simworks.Event {
 func NewEvent_Scram() *simworks.Event {
 	return simworks.NewImmediateEvent(Event_rc_scram)
 }
-
-func boolToFloat(b bool) float64 {
-	if b {
-		return 1.0
-	}
-	return 0.0
-}

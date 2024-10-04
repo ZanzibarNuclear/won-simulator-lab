@@ -56,6 +56,15 @@ func (cr *ControlRods) WithdrawShutdownBanks() {
 	}
 }
 
+func (cr *ControlRods) ShutdownBanksFullyWithdrawn() bool {
+	for _, bank := range cr.shutdownBanks {
+		if !bank.IsFullyWithdrawn() {
+			return false
+		}
+	}
+	return true
+}
+
 func (cr *ControlRods) InsertShutdownBanks() {
 	if cr.shutdownBanks[0].IsFullyInserted() {
 		return
@@ -64,15 +73,6 @@ func (cr *ControlRods) InsertShutdownBanks() {
 	for _, bank := range cr.shutdownBanks {
 		bank.LowerPosition(int(Config["control_rods"]["withdrawal_rate"]))
 	}
-}
-
-func (cr *ControlRods) ShutdownBanksFullyWithdrawn() bool {
-	for _, bank := range cr.shutdownBanks {
-		if !bank.IsFullyWithdrawn() {
-			return false
-		}
-	}
-	return true
 }
 
 func (cr *ControlRods) ShutdownBanksFullyInserted() bool {

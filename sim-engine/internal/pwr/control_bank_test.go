@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewControlBank(t *testing.T) {
+func TestControlBank_Init(t *testing.T) {
 	cb := NewControlBank("TestBank", 10)
 
 	assert.Equal(t, "TestBank", cb.Label())
@@ -14,7 +14,7 @@ func TestNewControlBank(t *testing.T) {
 	assert.Equal(t, 0, cb.Position())
 }
 
-func TestRaiseAndLowerControlBank(t *testing.T) {
+func TestControlBank_RaiseAndLower(t *testing.T) {
 	cb := NewControlBank("TestBank", 10)
 
 	// Test raising the position
@@ -42,7 +42,7 @@ func TestRaiseAndLowerControlBank(t *testing.T) {
 	assert.False(t, cb.IsFullyWithdrawn())
 }
 
-func TestScramControlBank(t *testing.T) {
+func TestControlBank_Scram(t *testing.T) {
 	cb := NewControlBank("TestBank", 10)
 
 	// Raise the position to a non-zero value
