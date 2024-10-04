@@ -10,6 +10,10 @@ import (
 
 /*
 Notes:
+In reality, steam flows through multiple stages, each stage extracting more energy from the
+steam as it expands. Between stages, the steam is reheated to make it dry (i.e., removing
+water at the saturation temperature).
+
 - Steam turbine is a component that converts steam energy into mechanical energy.
 - The steam turbine is driven by the steam pressure and flow rate from the steam generator.
 - The steam turbine is used to drive the generator.
@@ -108,7 +112,7 @@ func (st *SteamTurbine) Print() {
 	fmt.Printf("=> Steam Turbine\n")
 	st.BaseComponent.Print()
 	fmt.Printf("Inlet pressure: %.2f MPa\n", st.InletPressure())
-	fmt.Printf("Outlet pressure: %.2f MPa\n", st.OutletPressure())
+	fmt.Printf("Outlet pressure: %.5f MPa\n", st.OutletPressure())
 	fmt.Printf("Steam flow rate: %.2f kg/s\n", st.SteamFlowRate())
 	fmt.Printf("RPM: %d\n", st.Rpm())
 	fmt.Printf("Blade diameter: %.2f m\n", st.BladeDiameter())
@@ -126,14 +130,11 @@ func (st *SteamTurbine) Update(s *simworks.Simulator) (map[string]interface{}, e
 		return nil, errors.New("secondary loop not found")
 	}
 
-	// Update steam pressure based on SteamGenerator's output
+	// Note: playing with fixed values to approximate a working system
 	st.inletPressure = st.secondaryLoop.steamPressure
-	// st.steamFlowRate = st.secondaryLoop.steamFlowRate FIXME: add steam flow rate to secondary loop
-
-	// st.outletPressure = st.secondaryLoop.steamPressure - (st.secondaryLoop.steamFlowRate * 1000) // FIXME: use a more accurate model
-
+	st.outletPressure = Config["steam_turbine"]["outlet_pressure"] // set this to expected value for now - needs to be close to a vacuum to pull water into the condenser
+	st.steamFlowRate = Config["steam_turbine"]["steam_flow_rate"]  // this should come from the steam generator (at the moment) or secondary loop (if modeled differently))
 	st.rpm = st.CalculateRPM()
-	st.thermalPower = 150.0 // FIXME: derive from turbine movement?? or use typical PWR values
 	return st.Status(), nil
 }
 

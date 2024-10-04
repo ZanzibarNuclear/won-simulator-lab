@@ -93,7 +93,21 @@ func (sg *SteamGenerator) Update(s *simworks.Simulator) (map[string]interface{},
 	sg.secondaryInletTemp = sg.secondaryLoop.FeedwaterTemperatureOut() // 80˚C if feedheaters are on or around 40˚C if not
 
 	sg.heatTransferRate = 0.0 // TODO: calculate this using primary flow volume and temp differential between primary and secondary
-	sg.steamFlowRate = 0.0    // TODO: calculate this using heat transfer rate (and knowledge of reality)
+	sg.steamFlowRate = sg.CalculateSteamFlowRate()
 
 	return sg.Status(), nil
+}
+
+func (sg *SteamGenerator) CalculateSteamFlowRate() float64 {
+	// method 1:
+	// Steam Flow = Heat Input (from core) / (Steam Enthalpy - Feedwater Enthalpy)
+	// use steam tables and temp & pressure to find enthalpy
+
+	// other methods required information that is not available to the model. physical measurements, power output (which we're trying to calculate), etc.
+
+	steamEnthalpy := InterpolateSteamProperties(sg.secondaryOutletTemp).Enthalpy
+
+	feedwaterEnthalpy := InterpolateSteamProperties(sg.secondaryInletTemp).Enthalpy
+
+	return sg.heatTransferRate / (steamEnthalpy - feedwaterEnthalpy)
 }

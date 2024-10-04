@@ -13,6 +13,8 @@ type Generator struct {
 	electricalPowerOut float64 // in megawatts (MW)
 	connectedToGrid    bool
 	steamTurbine       *SteamTurbine
+	poles              int     // 2 for 2-pole, 4 for 4-pole
+	standardFrequency  float64 // Hz; 60 in North America, 50 in Europe
 }
 
 func NewGenerator(name string, description string, turbine *SteamTurbine) *Generator {
@@ -22,6 +24,8 @@ func NewGenerator(name string, description string, turbine *SteamTurbine) *Gener
 		electricalPowerOut: 0,
 		connectedToGrid:    false,
 		steamTurbine:       turbine,
+		poles:              2,
+		standardFrequency:  60.0,
 	}
 }
 
@@ -73,6 +77,17 @@ func (g *Generator) Update(s *simworks.Simulator) (map[string]interface{}, error
 		g.electricalPowerOut = 0
 	}
 
+	// once attached to grid, fall out if frequency (RPMs) changes too much
+	// frequency must stay within 0.067 Hz (about 0.1% of 60 Hz)
+	frequencyTolerance := g.standardFrequency * 0.001
+	if g.connectedToGrid {
+		if !simworks.AlmostEqual(float64(g.rpm), g.standardFrequency, frequencyTolerance) {
+			g.connectedToGrid = false
+			return g.Status(), errors.New("frequency changed too much")
+		}
+		// also depends on phase angle and voltage; not modeled as yet
+	}
+
 	return g.Status(), nil
 }
 
@@ -81,6 +96,7 @@ func (g *Generator) processEvent(event *simworks.Event) {
 	case Event_g_connectToGrid:
 
 		// frequency has to match standard frequency
+		// TODO: don't just give up; tell steam turbine to go faster or slower to match frequency
 		frequency := 1.0 / float64(g.rpm)
 		if !simworks.AlmostEqual(frequency, Config["generator"]["standard_ac_frequency"], 0.1) {
 			event.SetCanceled() // TODO: add cancelation reason to event

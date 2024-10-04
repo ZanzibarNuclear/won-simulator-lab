@@ -44,9 +44,11 @@ var SecondaryLoopConfig = map[string]float64{
 }
 
 var SteamTurbineConfig = map[string]float64{
-	"max_rpm":        3600,
-	"efficiency":     0.85,
-	"blade_diameter": 0.6,
+	"max_rpm":         3600,
+	"efficiency":      0.85,
+	"blade_diameter":  0.6,
+	"outlet_pressure": 0.003,
+	"steam_flow_rate": 310.3, // magic number to achieve 3600 RPMs
 }
 
 var GeneratorConfig = map[string]float64{

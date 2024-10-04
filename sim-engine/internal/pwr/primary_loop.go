@@ -124,6 +124,8 @@ func (pl *PrimaryLoop) Update(s *simworks.Simulator) (map[string]interface{}, er
 
 	// TODO: update hot and cold legs core temperature and steam generator outlet temperature
 
+	// when operating, hot leg will be about 325˚C and cold leg will be 285-290˚C
+
 	return pl.Status(), nil
 }
 
