@@ -17,11 +17,13 @@ import (
 // Not sure what to do with the gray banks yet. They should be useful for modeling
 // "load following," whatever that is.
 
+// Note: All banks of a given type move together at the moment. Need a targeted way
+// to control the banks. Maybe later.
+
 type ControlRods struct {
-	controlBanks          [4]*ControlBank  // full-strength absorbers; for power control during operation
-	grayBanks             [2]*ControlBank  // lower neutron absorption; for load following and fine reactivity control during operation
-	shutdownBanks         [4]*ShutdownBank // full-strength absorbers; for shutting down the core rapidly
-	withdrawShutdownBanks bool             // rods go up when true, down when false
+	controlBanks  [4]*ControlBank // full-strength absorbers; for power control during operation
+	grayBanks     [2]*ControlBank // lower neutron absorption; for load following and fine reactivity control during operation
+	shutdownBanks [4]*ControlBank // full-strength absorbers; for shutting down the core rapidly
 }
 
 func NewControlRods() *ControlRods {
@@ -36,20 +38,32 @@ func NewControlRods() *ControlRods {
 	cr.grayBanks[0] = NewControlBank("GR1", 8)
 	cr.grayBanks[1] = NewControlBank("GR2", 8)
 
-	cr.shutdownBanks[0] = NewShutdownBank("SD1", 8)
-	cr.shutdownBanks[1] = NewShutdownBank("SD2", 8)
-	cr.shutdownBanks[2] = NewShutdownBank("SD3", 8)
-	cr.shutdownBanks[3] = NewShutdownBank("SD4", 8)
+	cr.shutdownBanks[0] = NewControlBank("SD1", 8)
+	cr.shutdownBanks[1] = NewControlBank("SD2", 8)
+	cr.shutdownBanks[2] = NewControlBank("SD3", 8)
+	cr.shutdownBanks[3] = NewControlBank("SD4", 8)
 
 	return cr
 }
 
-func (cr *ControlRods) InitiateShutdownBankWithdrawal() {
-	cr.withdrawShutdownBanks = true
+func (cr *ControlRods) WithdrawShutdownBanks() {
+	if cr.shutdownBanks[0].IsFullyWithdrawn() {
+		return
+	}
+
+	for _, bank := range cr.shutdownBanks {
+		bank.RaisePosition(int(Config["control_rods"]["withdrawal_rate"]))
+	}
 }
 
-func (cr *ControlRods) InitiateShutdownBankInsertion() {
-	cr.withdrawShutdownBanks = false
+func (cr *ControlRods) InsertShutdownBanks() {
+	if cr.shutdownBanks[0].IsFullyInserted() {
+		return
+	}
+
+	for _, bank := range cr.shutdownBanks {
+		bank.LowerPosition(int(Config["control_rods"]["withdrawal_rate"]))
+	}
 }
 
 func (cr *ControlRods) ShutdownBanksFullyWithdrawn() bool {
@@ -70,38 +84,48 @@ func (cr *ControlRods) ShutdownBanksFullyInserted() bool {
 	return true
 }
 
-// bank 1 thru 7
-func (cr *ControlRods) AdjustControlBankPosition(bank int, target int) {
-	if bank < 1 || bank > 4 {
-		fmt.Printf("Tried to move control bank %d, which is out of bounds/n", bank)
+func (cr *ControlRods) AdjustControlBanks(target int) {
+	if target < 0 || target > int(Config["control_rods"]["max_withdrawal_steps"]) {
+		fmt.Printf("Tried to move control banks to %d, which is out of bounds\n", target)
 		return
 	}
-	cr.controlBanks[bank-1].SetTarget(target)
-}
 
-func (cr *ControlRods) AdjustGrayBankPosition(bank int, target int) {
-	if bank < 1 || bank > 2 {
-		fmt.Printf("Tried to move gray bank %d, which is out of bounds/n", bank)
+	currentPosition := cr.controlBanks[0].Position()
+	if currentPosition == target {
 		return
 	}
-	cr.grayBanks[bank-1].SetTarget(target)
-}
-
-func (cr *ControlRods) AverageControlRodExtraction() float64 {
-	totalSteps := 0
-
-	// never mind gray banks for now
-	maxSteps := MAX_WITHDRAWAL_STEPS * len(cr.controlBanks)
-
 	for _, bank := range cr.controlBanks {
-		totalSteps += bank.Position()
+		if target > currentPosition {
+			bank.RaisePosition(int(Config["control_rods"]["withdrawal_rate"]))
+		} else {
+			bank.LowerPosition(int(Config["control_rods"]["withdrawal_rate"]))
+		}
+	}
+}
+
+func (cr *ControlRods) AdjustGrayBanks(target int) {
+	if target < 0 || target > int(Config["control_rods"]["max_withdrawal_steps"]) {
+		fmt.Printf("Tried to move control banks to %d, which is out of bounds\n", target)
+		return
 	}
 
-	if maxSteps == 0 {
-		return 0 // avoid divide by zero; should not be possible though
+	currentPosition := cr.grayBanks[0].Position()
+	if currentPosition == target {
+		return
 	}
+	for _, bank := range cr.grayBanks {
+		if target > currentPosition {
+			bank.RaisePosition(int(Config["control_rods"]["withdrawal_rate"]))
+		} else {
+			bank.LowerPosition(int(Config["control_rods"]["withdrawal_rate"]))
+		}
+	}
+}
 
-	return float64(totalSteps) / float64(maxSteps) * 100
+// percent extraction
+func (cr *ControlRods) AverageControlRodExtraction() float64 {
+	// at the moment, all control rods will be in the same position
+	return 1.0 - float64(cr.controlBanks[0].Position())/Config["control_rods"]["max_withdrawal_steps"]
 }
 
 func (cr *ControlRods) Scram() {
@@ -113,39 +137,6 @@ func (cr *ControlRods) Scram() {
 	}
 	for _, bank := range cr.shutdownBanks {
 		bank.Scram()
-	}
-	cr.withdrawShutdownBanks = false
-}
-
-func (cr *ControlRods) Update() {
-	if cr.withdrawShutdownBanks {
-		for _, bank := range cr.shutdownBanks {
-			if !bank.IsFullyWithdrawn() {
-				if bank.Target() == 0 {
-					bank.Withdraw()
-				}
-				break
-			}
-		}
-	} else {
-		for _, bank := range cr.shutdownBanks {
-			if !bank.IsFullyInserted() {
-				if bank.Target() != 0 {
-					bank.Insert()
-				}
-				break
-			}
-		}
-	}
-
-	for _, bank := range cr.controlBanks {
-		bank.Update()
-	}
-	for _, bank := range cr.grayBanks {
-		bank.Update()
-	}
-	for _, bank := range cr.shutdownBanks {
-		bank.Update()
 	}
 }
 

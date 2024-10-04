@@ -60,6 +60,11 @@ var CondenserConfig = map[string]float64{
 	"thermal_efficiency": 0.33,
 }
 
+var ControlRodConfig = map[string]float64{
+	"max_withdrawal_steps": 250,
+	"withdrawal_rate":      1, // steps per second
+}
+
 var Config = map[string]map[string]float64{
 	"common":         Common,
 	"primary_loop":   PrimaryLoopConfig,
@@ -67,4 +72,5 @@ var Config = map[string]map[string]float64{
 	"pressurizer":    PressurizerConfig,
 	"steam_turbine":  SteamTurbineConfig,
 	"generator":      GeneratorConfig,
+	"control_rods":   ControlRodConfig,
 }
