@@ -24,13 +24,15 @@ type Condenser struct {
 	tubeMaterial            string  // "titanium", "stainless_steel", "copper_nickel"
 	condenserType           string  // "water-cooled", "air-cooled"
 	steamTurbine            *SteamTurbine
+	secondaryLoop           *SecondaryLoop
 }
 
 // NewCondenser creates a new Condenser instance
-func NewCondenser(name string, description string, steamTurbine *SteamTurbine) *Condenser {
+func NewCondenser(name string, description string, steamTurbine *SteamTurbine, secondaryLoop *SecondaryLoop) *Condenser {
 	return &Condenser{
 		BaseComponent: *simworks.NewBaseComponent(name, description),
 		steamTurbine:  steamTurbine,
+		secondaryLoop: secondaryLoop,
 		surfaceArea:   Config["condenser"]["surface_area"],
 		tubeMaterial:  "titanium",
 		condenserType: "water-cooled",

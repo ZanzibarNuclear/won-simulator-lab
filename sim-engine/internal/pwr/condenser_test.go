@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewCondenser(t *testing.T) {
-	c := NewCondenser("Test Condenser", "A test condenser", nil)
+	c := NewCondenser("Test Condenser", "A test condenser", nil, nil)
 	s := simworks.NewSimulator("Test Simulator", "A test simulator")
 	s.AddComponent(c)
 
@@ -21,9 +21,10 @@ func TestCondenserNormalOperation(t *testing.T) {
 	mockSteamTurbine := &SteamTurbine{
 		thermalPower: 3000, // MW
 	}
+	sl := NewSecondaryLoop("Test Secondary Loop", "A test secondary loop")
 
 	// Create a new condenser with the mock steam turbine
-	c := NewCondenser("Test Condenser", "A test condenser", mockSteamTurbine)
+	c := NewCondenser("Test Condenser", "A test condenser", mockSteamTurbine, sl)
 	s := simworks.NewSimulator("Test Simulator", "A test simulator")
 	s.AddComponent(c)
 

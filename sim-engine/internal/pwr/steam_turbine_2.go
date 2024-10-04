@@ -6,6 +6,19 @@ import (
 	"strings"
 )
 
+/*
+Advanced model of the steam turbine. Might come in useful when considering whether to
+level up models for each component.
+
+This model takes into account the following factors:
+- Moisture content
+- Feedwater heaters
+- Condenser type
+- Turbine stages
+- Extraction points
+- Efficiency
+*/
+
 // TurbineStage represents a single stage in the steam turbine
 type TurbineStage struct {
 	Name            string

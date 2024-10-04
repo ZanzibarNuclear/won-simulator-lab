@@ -12,9 +12,9 @@ type Generator struct {
 	rpm                int
 	electricalPowerOut float64 // in megawatts (MW)
 	connectedToGrid    bool
-	steamTurbine       *SteamTurbine
 	poles              int     // 2 for 2-pole, 4 for 4-pole
 	standardFrequency  float64 // Hz; 60 in North America, 50 in Europe
+	steamTurbine       *SteamTurbine
 }
 
 func NewGenerator(name string, description string, turbine *SteamTurbine) *Generator {

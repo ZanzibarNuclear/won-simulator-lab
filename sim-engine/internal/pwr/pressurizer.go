@@ -14,13 +14,15 @@ type Pressurizer struct {
 	heaterPower     float64 // in kW
 	sprayNozzleOpen bool
 	sprayFlowRate   float64 // in kg/s
+	primaryLoop     *PrimaryLoop
 }
 
-func NewPressurizer(name string, description string) *Pressurizer {
+func NewPressurizer(name string, description string, primaryLoop *PrimaryLoop) *Pressurizer {
 	return &Pressurizer{
 		BaseComponent: *simworks.NewBaseComponent(name, description),
 		pressure:      Config["common"]["atmospheric_pressure"], // MPa, typical PWR pressurizer pressure
 		temperature:   Config["common"]["room_temperature"],     // °C, typical PWR pressurizer temperature
+		primaryLoop:   primaryLoop,
 	}
 }
 

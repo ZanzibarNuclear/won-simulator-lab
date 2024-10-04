@@ -8,7 +8,8 @@ import (
 )
 
 func TestNewReactorCore(t *testing.T) {
-	r := NewReactorCore("Test Reactor Core", "A test reactor core")
+	pl := NewPrimaryLoop("Test Primary Loop", "A test primary loop")
+	r := NewReactorCore("Test Reactor Core", "A test reactor core", pl)
 	s := simworks.NewSimulator("Test Simulator", "A test simulator")
 	s.AddComponent(r)
 

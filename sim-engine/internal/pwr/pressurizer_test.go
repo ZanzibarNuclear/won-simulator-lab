@@ -8,7 +8,8 @@ import (
 )
 
 func TestNewPressurizerDefaults(t *testing.T) {
-	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
+	pl := NewPrimaryLoop("TestPrimaryLoop", "Test primary loop description")
+	p := NewPressurizer("TestPressurizer", "Test pressurizer description", pl)
 
 	// Test default values
 	assert.NotEmpty(t, p.ID())
@@ -21,7 +22,8 @@ func TestNewPressurizerDefaults(t *testing.T) {
 }
 
 func TestPressurizer_HeaterPowerEvent(t *testing.T) {
-	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
+	pl := NewPrimaryLoop("TestPrimaryLoop", "Test primary loop description")
+	p := NewPressurizer("TestPressurizer", "Test pressurizer description", pl)
 	pwrSim := NewPwrSim("Test PWR", "Heater power test simulation")
 	pwrSim.AddComponent(p)
 
@@ -46,7 +48,8 @@ func TestPressurizer_HeaterPowerEvent(t *testing.T) {
 }
 
 func TestPressurizer_SprayNozzleEvent(t *testing.T) {
-	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
+	pl := NewPrimaryLoop("TestPrimaryLoop", "Test primary loop description")
+	p := NewPressurizer("TestPressurizer", "Test pressurizer description", pl)
 	pwrSim := NewPwrSim("Test PWR", "Spray nozzle test simulation")
 	pwrSim.AddComponent(p)
 
@@ -83,7 +86,8 @@ func TestPressurizer_SprayNozzleEvent(t *testing.T) {
 }
 
 func TestPressurizer_SetPressureEvent(t *testing.T) {
-	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
+	pl := NewPrimaryLoop("TestPrimaryLoop", "Test primary loop description")
+	p := NewPressurizer("TestPressurizer", "Test pressurizer description", pl)
 	pwrSim := NewPwrSim("Test PWR", "We test so you don't have to.")
 	pwrSim.AddComponent(p)
 
@@ -109,7 +113,8 @@ func TestPressurizer_SetPressureEvent(t *testing.T) {
 }
 
 func TestPressurizer_ReliefValveVentEvent(t *testing.T) {
-	p := NewPressurizer("TestPressurizer", "Test pressurizer description")
+	pl := NewPrimaryLoop("TestPrimaryLoop", "Test primary loop description")
+	p := NewPressurizer("TestPressurizer", "Test pressurizer description", pl)
 	pwrSim := NewPwrSim("Test PWR", "Relief valve vent test simulation")
 	pwrSim.AddComponent(p)
 	pwrSim.SetEventHandler(pwrSim)

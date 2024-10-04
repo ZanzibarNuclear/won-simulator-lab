@@ -18,6 +18,10 @@ const (
 	Event_sl_emergencyMssvVent        = "secondary_loop.emergency_mssv.vented"
 	Event_g_connectToGrid             = "generator.connect_to_grid"
 	Event_g_connectToGridFailure      = "generator.connect_to_grid.failed"
+	Event_rc_repositionControlRods    = "reactor_core.control_rods.reposition"
+	Event_rc_withdrawShutdownBanks    = "reactor_core.shutdown_banks.withdraw"
+	Event_rc_insertShutdownBanks      = "reactor_core.shutdown_banks.insert"
+	Event_rc_scram                    = "reactor_core.scram"
 )
 
 func NewEvent_PumpSwitch(on bool) *simworks.Event {
@@ -66,4 +70,29 @@ func NewEvent_ConnectToGrid(connect bool) *simworks.Event {
 
 func NewEvent_ConnectToGridFailure() *simworks.Event {
 	return simworks.NewImmediateEvent(Event_g_connectToGridFailure)
+}
+
+func NewEvent_RepositionControlRods(position float64) *simworks.Event {
+	event := simworks.NewAdjustmentEvent(Event_rc_repositionControlRods, position)
+	// TODO: need a way to specify which bank of rods to move
+	return event
+}
+
+func NewEvent_WithdrawShutdownBanks() *simworks.Event {
+	return simworks.NewAdjustmentEvent(Event_rc_withdrawShutdownBanks, 1.0)
+}
+
+func NewEvent_InsertShutdownBanks() *simworks.Event {
+	return simworks.NewAdjustmentEvent(Event_rc_insertShutdownBanks, 1.0)
+}
+
+func NewEvent_Scram() *simworks.Event {
+	return simworks.NewImmediateEvent(Event_rc_scram)
+}
+
+func boolToFloat(b bool) float64 {
+	if b {
+		return 1.0
+	}
+	return 0.0
 }
