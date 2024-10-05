@@ -20,12 +20,14 @@ func TestCondenser_Init(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestCondenserNormalOperation(t *testing.T) {
+func TestCondenser_NormalOperation(t *testing.T) {
 	// Create a mock steam turbine
 	sl := NewSecondaryLoop("Test Secondary Loop", "A test secondary loop")
-
-	st := NewSteamTurbine("Test Steam Turbine", "A test steam turbine", sl)
-	st.SetThermalPower(2000.0)
+	st := &SteamTurbine{
+		BaseComponent: *simworks.NewBaseComponent("Test Steam Turbine", "A test steam turbine"),
+		thermalPower:  2000.0,
+		secondaryLoop: sl,
+	}
 	c := NewCondenser("Test Condenser", "A test condenser", st, sl)
 
 	s := simworks.NewSimulator("Test Simulator", "A test simulator")

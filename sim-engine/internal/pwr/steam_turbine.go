@@ -99,10 +99,6 @@ func (st *SteamTurbine) ThermalPower() float64 {
 	return st.thermalPower
 }
 
-func (st *SteamTurbine) SetThermalPower(thermalPower float64) {
-	st.thermalPower = thermalPower
-}
-
 func (st *SteamTurbine) Status() map[string]interface{} {
 	return map[string]interface{}{
 		"about":          st.BaseComponent.Status(),
@@ -115,6 +111,10 @@ func (st *SteamTurbine) Status() map[string]interface{} {
 		"maxRPM":         st.MaxRPM(),
 		"thermalPower":   st.ThermalPower(),
 	}
+}
+
+func (st *SteamTurbine) SecondaryLoop() *SecondaryLoop {
+	return st.secondaryLoop
 }
 
 func (st *SteamTurbine) Print() {

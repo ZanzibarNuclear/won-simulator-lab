@@ -1,6 +1,7 @@
 package pwr
 
 import (
+	"errors"
 	"fmt"
 
 	"worldofnuclear.com/internal/simworks"
@@ -26,18 +27,20 @@ type Condenser struct {
 }
 
 // NewCondenser creates a new Condenser instance
-func NewCondenser(name string, description string, steamTurbine *SteamTurbine, secondaryLoop *SecondaryLoop) *Condenser {
-	steamTurbine.Print()
-
+func NewCondenser(name string, description string, st *SteamTurbine, sl *SecondaryLoop) *Condenser {
 	return &Condenser{
 		BaseComponent: *simworks.NewBaseComponent(name, description),
-		steamTurbine:  steamTurbine,
-		secondaryLoop: secondaryLoop,
+		steamTurbine:  st,
+		secondaryLoop: sl,
 		surfaceArea:   float64(Config["condenser"]["surface_area"]),
 		tubeMaterial:  "titanium",
 		condenserType: "water-cooled",
 		waterVelocity: 2.0, // m/s; expected?
 	}
+}
+
+func (c *Condenser) SteamTurbine() *SteamTurbine {
+	return c.steamTurbine
 }
 
 func (c *Condenser) HeatRejection() float64 {
@@ -132,8 +135,12 @@ func (c *Condenser) Print() {
 
 func (c *Condenser) Update(s *simworks.Simulator) (map[string]interface{}, error) {
 
+	if c.steamTurbine == nil || c.secondaryLoop == nil {
+		return nil, errors.New("steam turbine and secondary loop are required")
+	}
+
 	efficiency := Config["steam_turbine"]["efficiency"]
-	c.heatRejection = c.steamTurbine.ThermalPower() * (1 - efficiency)
+	c.heatRejection = c.SteamTurbine().ThermalPower() * (1 - efficiency)
 
 	c.coolingWaterTempIn = Config["condenser"]["cooling_water_temp_in"]
 	c.coolingWaterTempOut = Config["condenser"]["cooling_water_temp_out"]
