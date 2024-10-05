@@ -92,6 +92,9 @@ func (sg *SteamGenerator) Update(s *simworks.Simulator) (map[string]interface{},
 	sg.secondaryOutletTemp = 285.0                                     // aiming for 285˚C, but depends on primary inlet temp
 	sg.secondaryInletTemp = sg.secondaryLoop.FeedwaterTemperatureOut() // 80˚C if feedheaters are on or around 40˚C if not
 
+	stPressure := InterpolateSteamProperties(sg.secondaryOutletTemp).Pressure
+	sg.secondaryLoop.SetSteamPressure(stPressure)
+
 	sg.heatTransferRate = 0.0 // TODO: calculate this using primary flow volume and temp differential between primary and secondary
 	sg.steamFlowRate = sg.CalculateSteamFlowRate()
 
