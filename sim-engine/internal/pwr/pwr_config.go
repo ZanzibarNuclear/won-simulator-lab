@@ -56,8 +56,10 @@ var GeneratorConfig = map[string]float64{
 }
 
 var CondenserConfig = map[string]float64{
-	"surface_area":       40000.0,
-	"thermal_efficiency": 0.33,
+	"cooling_water_temp_in":  20.0,
+	"cooling_water_temp_out": 28.0,
+	"surface_area":           40000.0,
+	"thermal_efficiency":     0.33,
 }
 
 var ControlRodConfig = map[string]float64{
@@ -72,5 +74,6 @@ var Config = map[string]map[string]float64{
 	"pressurizer":    PressurizerConfig,
 	"steam_turbine":  SteamTurbineConfig,
 	"generator":      GeneratorConfig,
+	"condenser":      CondenserConfig,
 	"control_rods":   ControlRodConfig,
 }

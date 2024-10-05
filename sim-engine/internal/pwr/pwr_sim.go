@@ -79,3 +79,12 @@ func CalcLinearDecrease(currentValue, targetValue, stepSize float64) float64 {
 	}
 	return targetValue
 }
+
+func (s *PwrSim) FindSteamTurbine() *SteamTurbine {
+	for _, component := range s.Components {
+		if st, ok := component.(*SteamTurbine); ok {
+			return st
+		}
+	}
+	return nil
+}

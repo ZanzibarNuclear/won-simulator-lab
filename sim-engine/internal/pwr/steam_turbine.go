@@ -57,8 +57,13 @@ type SteamTurbine struct {
 
 func NewSteamTurbine(name string, description string, secondaryLoop *SecondaryLoop) *SteamTurbine {
 	return &SteamTurbine{
-		BaseComponent: *simworks.NewBaseComponent(name, description),
-		secondaryLoop: secondaryLoop,
+		BaseComponent:  *simworks.NewBaseComponent(name, description),
+		secondaryLoop:  secondaryLoop,
+		inletPressure:  0.0,
+		outletPressure: 0.0,
+		steamFlowRate:  0.0,
+		rpm:            0,
+		thermalPower:   0.0,
 	}
 }
 
@@ -92,6 +97,10 @@ func (st *SteamTurbine) Rpm() int {
 
 func (st *SteamTurbine) ThermalPower() float64 {
 	return st.thermalPower
+}
+
+func (st *SteamTurbine) SetThermalPower(thermalPower float64) {
+	st.thermalPower = thermalPower
 }
 
 func (st *SteamTurbine) Status() map[string]interface{} {

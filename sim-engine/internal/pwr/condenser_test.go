@@ -7,10 +7,14 @@ import (
 	"worldofnuclear.com/internal/simworks"
 )
 
-func TestNewCondenser(t *testing.T) {
+func TestCondenser_Init(t *testing.T) {
 	c := NewCondenser("Test Condenser", "A test condenser", nil, nil)
 	s := simworks.NewSimulator("Test Simulator", "A test simulator")
 	s.AddComponent(c)
+
+	assert.Equal(t, c.TubeMaterial(), "titanium")
+	assert.Equal(t, c.CondenserType(), "water-cooled")
+	assert.Equal(t, c.SurfaceArea(), Config["condenser"]["surface_area"])
 
 	_, err := c.Update(s)
 	assert.Error(t, err)
@@ -18,22 +22,22 @@ func TestNewCondenser(t *testing.T) {
 
 func TestCondenserNormalOperation(t *testing.T) {
 	// Create a mock steam turbine
-	mockSteamTurbine := &SteamTurbine{
-		thermalPower: 3000, // MW
-	}
 	sl := NewSecondaryLoop("Test Secondary Loop", "A test secondary loop")
 
-	// Create a new condenser with the mock steam turbine
-	c := NewCondenser("Test Condenser", "A test condenser", mockSteamTurbine, sl)
+	st := NewSteamTurbine("Test Steam Turbine", "A test steam turbine", sl)
+	st.SetThermalPower(2000.0)
+	c := NewCondenser("Test Condenser", "A test condenser", st, sl)
+
 	s := simworks.NewSimulator("Test Simulator", "A test simulator")
+	s.AddComponent(sl)
+	s.AddComponent(st)
 	s.AddComponent(c)
 
-	// Set initial conditions
-	c.coolingWaterTempIn = 25.0 // °C
-
 	// Run the update method to simulate normal operation
-	_, err := c.Update(s)
-	assert.NoError(t, err)
+	s.Step()
 
-	assert.Fail(t, "Test not implemented")
+	assert.Greater(t, c.HeatRejection(), 0.0) // starting quantity of heat, derived from steam turbine
+
+	assert.Equal(t, c.CoolingWaterTempIn(), Config["condenser"]["cooling_water_temp_in"])
+	assert.Greater(t, c.CoolingWaterTempOut(), c.CoolingWaterTempIn()) // temperature should rise because heat is being extracted
 }
