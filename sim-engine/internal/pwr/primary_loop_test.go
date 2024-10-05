@@ -6,7 +6,7 @@ import (
 	"worldofnuclear.com/internal/simworks"
 )
 
-func TestNewPrimaryLoop(t *testing.T) {
+func TestPrimaryLoop_Init(t *testing.T) {
 	pl := NewPrimaryLoop("TestLoop-Pump", "The is a test.")
 	if pl.Name() != "TestLoop-Pump" {
 		t.Errorf("Expected name to be TestLoop-Pump, got %s", pl.Name())
@@ -16,7 +16,7 @@ func TestNewPrimaryLoop(t *testing.T) {
 	}
 }
 
-func TestSimulatorDrivesPrimaryLoop(t *testing.T) {
+func TestPrimaryLoop_SimulatorDrives(t *testing.T) {
 	pl := NewPrimaryLoop("TestLoop-Pump", "The is a test.")
 	sim := simworks.NewSimulator("Test Sim", "Test Sim")
 	sim.AddComponent(pl)

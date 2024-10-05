@@ -6,7 +6,7 @@ import (
 	"worldofnuclear.com/internal/simworks"
 )
 
-func TestInterpolateSteamProperties(t *testing.T) {
+func TestSteamTable_InterpolateGivenTemperature(t *testing.T) {
 	testCases := []struct {
 		temperature float64
 		expected    SteamTableEntry
@@ -46,7 +46,7 @@ func TestInterpolateSteamProperties(t *testing.T) {
 	}
 }
 
-func TestInterpolateFromGivenPressure(t *testing.T) {
+func TestSteamTable_InterpolateGivenPressure(t *testing.T) {
 	testCases := []struct {
 		pressure  float64
 		expected  SteamTableEntry

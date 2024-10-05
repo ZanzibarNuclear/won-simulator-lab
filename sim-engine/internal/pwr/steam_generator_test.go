@@ -7,7 +7,7 @@ import (
 	"worldofnuclear.com/internal/simworks"
 )
 
-func TestNewSteamGenerator(t *testing.T) {
+func TestSteamGenerator_Init(t *testing.T) {
 	sg := NewSteamGenerator("SG1", "Test Steam Generator", nil, nil)
 	s := simworks.NewSimulator("Test Simulator", "Testing steam generator")
 	s.AddComponent(sg)

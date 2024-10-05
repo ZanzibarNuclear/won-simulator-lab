@@ -7,7 +7,7 @@ import (
 	"worldofnuclear.com/internal/simworks"
 )
 
-func TestNewSecondaryLoop_InitialState(t *testing.T) {
+func TestSecondaryLoop_Init(t *testing.T) {
 	sl := NewSecondaryLoop("Test Secondary Loop", "A test secondary loop")
 
 	assert.NotNil(t, sl)
